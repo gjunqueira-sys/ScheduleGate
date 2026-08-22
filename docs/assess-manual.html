@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScheduleGate — assess Command Manual</title>
+  <style>
+    /* ── Design tokens (matches CLI report theme) ─────────────────────── */
+    :root {
+      --bg-dark:        #0f172a;
+      --bg-card:        #1e293b;
+      --bg-card-hover:  #243044;
+      --bg-input:       #162032;
+      --text-main:      #f1f5f9;
+      --text-muted:     #94a3b8;
+      --accent-blue:    #3b82f6;
+      --accent-purple:  #8b5cf6;
+      --accent-grad:    linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      --logo-grad:      linear-gradient(180deg, #2563eb, #3b82f6, #60a5fa, #818cf8, #a78bfa, #c084fc, #d8b4fe);
+      --border:         #334155;
+      --success:        #10b981;
+      --warning:        #f59e0b;
+      --danger:         #ef4444;
+      --radius-sm:      6px;
+      --radius-md:      12px;
+      --radius-lg:      16px;
+      --shadow:         0 4px 20px rgba(0,0,0,.45);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ───────────────────────────────────────────────────────── */
+    .sidebar {
+      background: #0b1221;
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-logo {
+      font-family: 'Courier New', monospace;
+      font-size: 5.2px;
+      line-height: 6.5px;
+      white-space: pre;
+      font-weight: 700;
+      background: var(--logo-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      padding: 0 .5rem 1rem;
+      overflow: hidden;
+    }
+
+    .sidebar-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--text-muted);
+      padding: .75rem 1.25rem .35rem;
+    }
+
+    .sidebar-nav a {
+      display: block;
+      padding: .42rem 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--text-main);
+      border-left-color: var(--accent-blue);
+      background: rgba(59,130,246,.08);
+    }
+    .sidebar-nav a .badge-id {
+      display: inline-block;
+      width: 22px;
+      height: 18px;
+      line-height: 18px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 4px;
+      text-align: center;
+      background: rgba(59,130,246,.18);
+      color: var(--accent-blue);
+      margin-right: .45rem;
+    }
+
+    /* ── Main content ──────────────────────────────────────────────────── */
+    .content {
+      padding: 2.5rem 3rem 4rem;
+      max-width: 900px;
+    }
+
+    /* ── Page header ───────────────────────────────────────────────────── */
+    .page-header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+
+    .page-header .logo-block {
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      line-height: 11px;
+      white-space: pre;
+      font-weight: 700;
+      background: var(--logo-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-header h1 {
+      font-size: 2.4rem;
+      font-weight: 900;
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.15;
+      margin-bottom: .5rem;
+    }
+
+    .page-header .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 620px;
+    }
+
+    .page-header .version-badge {
+      display: inline-block;
+      margin-top: .8rem;
+      padding: .2rem .7rem;
+      border-radius: 99px;
+      font-size: .75rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* ── Sections ──────────────────────────────────────────────────────── */
+    section {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .section-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent-grad);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Cards ─────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Code / Command blocks ──────────────────────────────────────────── */
+    .cmd-block {
+      background: #060e1a;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin: .75rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: .9rem;
+      color: #a5f3fc;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .cmd-block .prompt {
+      color: var(--accent-purple);
+      user-select: none;
+    }
+
+    .cmd-block .flag {
+      color: #86efac;
+    }
+
+    .cmd-block .value {
+      color: #fde68a;
+    }
+
+    .cmd-block .comment {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: .6rem;
+      right: .7rem;
+      background: rgba(59,130,246,.15);
+      border: 1px solid rgba(59,130,246,.3);
+      color: var(--accent-blue);
+      font-size: .72rem;
+      font-weight: 600;
+      padding: .2rem .55rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .copy-btn:hover { background: rgba(59,130,246,.3); color: #fff; }
+    .copy-btn.copied { color: var(--success); border-color: var(--success); background: rgba(16,185,129,.15); }
+
+    /* ── Flag table ─────────────────────────────────────────────────────── */
+    .flags-grid {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .flag-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.1rem 1.35rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: .5rem 1.2rem;
+      align-items: start;
+      transition: border-color .2s, background .2s;
+    }
+
+    .flag-card:hover {
+      border-color: rgba(59,130,246,.4);
+      background: var(--bg-card-hover);
+    }
+
+    .flag-name {
+      font-family: 'Courier New', monospace;
+      font-size: .92rem;
+      font-weight: 700;
+      color: #86efac;
+      white-space: nowrap;
+      padding-top: .1rem;
+    }
+
+    .flag-desc {
+      font-size: .9rem;
+      color: var(--text-main);
+      line-height: 1.55;
+    }
+
+    .flag-desc small {
+      display: block;
+      color: var(--text-muted);
+      font-size: .8rem;
+      margin-top: .25rem;
+    }
+
+    .flag-tag {
+      font-size: .7rem;
+      font-weight: 700;
+      padding: .15rem .5rem;
+      border-radius: 99px;
+      white-space: nowrap;
+      align-self: start;
+    }
+
+    .tag-required { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid var(--danger); }
+    .tag-optional { background: rgba(148,163,184,.1); color: var(--text-muted); border: 1px solid var(--border); }
+    .tag-output   { background: rgba(139,92,246,.15); color: #c084fc; border: 1px solid #8b5cf6; }
+
+    /* ── Metric accordion ──────────────────────────────────────────────── */
+    .metric-search {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: .7rem 1rem;
+      color: var(--text-main);
+      font-size: .95rem;
+      margin-bottom: 1.2rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .metric-search:focus { border-color: var(--accent-blue); }
+    .metric-search::placeholder { color: var(--text-muted); }
+
+    .metric-filter-bar {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-size: .78rem;
+      font-weight: 600;
+      padding: .3rem .8rem;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filter-btn:hover { border-color: var(--accent-blue); color: var(--text-main); }
+    .filter-btn.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+    .filter-btn.pass-filter.active  { background: var(--success); border-color: var(--success); }
+    .filter-btn.fail-filter.active  { background: var(--danger); border-color: var(--danger); }
+
+    .metric-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: .65rem;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .metric-item:hover { border-color: rgba(59,130,246,.35); }
+    .metric-item.hidden { display: none; }
+
+    .metric-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .metric-id {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent-grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      font-weight: 900;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .metric-title-group {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .metric-title-group strong {
+      display: block;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .metric-title-group .pam-ref {
+      font-size: .78rem;
+      color: var(--text-muted);
+    }
+
+    .metric-threshold {
+      font-family: monospace;
+      font-size: .82rem;
+      font-weight: 700;
+      padding: .2rem .65rem;
+      border-radius: 99px;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .threshold-lte {
+      color: #93c5fd;
+      border-color: rgba(59,130,246,.4);
+      background: rgba(59,130,246,.1);
+    }
+
+    .threshold-gte {
+      color: #6ee7b7;
+      border-color: rgba(16,185,129,.4);
+      background: rgba(16,185,129,.1);
+    }
+
+    .threshold-zero {
+      color: #fca5a5;
+      border-color: rgba(239,68,68,.4);
+      background: rgba(239,68,68,.1);
+    }
+
+    .threshold-binary {
+      color: #fde68a;
+      border-color: rgba(245,158,11,.4);
+      background: rgba(245,158,11,.1);
+    }
+
+    .metric-chevron {
+      color: var(--text-muted);
+      transition: transform .25s;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .metric-item.open .metric-chevron { transform: rotate(180deg); }
+
+    .metric-body {
+      display: none;
+      padding: 0 1.25rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .metric-item.open .metric-body { display: block; }
+
+    .metric-body-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.1rem;
+    }
+
+    @media (max-width: 640px) {
+      .metric-body-grid { grid-template-columns: 1fr; }
+    }
+
+    .info-block {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .85rem 1rem;
+    }
+
+    .info-block-label {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      margin-bottom: .45rem;
+    }
+
+    .info-block p {
+      font-size: .88rem;
+      color: var(--text-main);
+      line-height: 1.55;
+    }
+
+    .formula {
+      font-family: 'Courier New', monospace;
+      font-size: .88rem;
+      color: #fde68a;
+      background: #060e1a;
+      border-radius: var(--radius-sm);
+      padding: .5rem .85rem;
+      margin-top: .4rem;
+      display: inline-block;
+    }
+
+    .exception-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-top: .5rem;
+    }
+
+    .exc-tag {
+      font-size: .75rem;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      background: rgba(139,92,246,.15);
+      color: #c084fc;
+      border: 1px solid rgba(139,92,246,.3);
+    }
+
+    /* ── Output formats ─────────────────────────────────────────────────── */
+    .output-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 720px) {
+      .output-cards { grid-template-columns: 1fr; }
+    }
+
+    .output-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      transition: border-color .2s, background .2s;
+    }
+    .output-card:hover { border-color: rgba(139,92,246,.4); background: var(--bg-card-hover); }
+
+    .output-icon {
+      font-size: 1.75rem;
+      margin-bottom: .65rem;
+    }
+
+    .output-title {
+      font-weight: 700;
+      font-size: .95rem;
+      margin-bottom: .35rem;
+    }
+
+    .output-desc {
+      font-size: .83rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── Callout boxes ──────────────────────────────────────────────────── */
+    .callout {
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      border-left: 4px solid;
+      font-size: .9rem;
+      line-height: 1.55;
+    }
+    .callout-info  { background: rgba(59,130,246,.08); border-color: var(--accent-blue); color: #bfdbfe; }
+    .callout-warn  { background: rgba(245,158,11,.08); border-color: var(--warning); color: #fde68a; }
+    .callout-tip   { background: rgba(16,185,129,.08); border-color: var(--success); color: #a7f3d0; }
+    .callout strong { font-weight: 700; }
+
+    /* ── Misc ─────────────────────────────────────────────────────────── */
+    a { color: var(--accent-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: .88em;
+      background: rgba(255,255,255,.07);
+      padding: .1em .38em;
+      border-radius: 4px;
+      color: #a5f3fc;
+    }
+
+    p { margin-bottom: .75rem; }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol { padding-left: 1.4rem; margin-bottom: .75rem; }
+    li { margin-bottom: .3rem; font-size: .9rem; color: var(--text-muted); }
+    li strong { color: var(--text-main); }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+    /* ── Mobile sidebar toggle ──────────────────────────────────────────── */
+    .mobile-menu-btn {
+      display: none;
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 200;
+      background: var(--accent-grad);
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 1.3rem;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      color: #fff;
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        width: 260px;
+        z-index: 100;
+        transition: left .25s;
+      }
+      .sidebar.open { left: 0; }
+      .content { padding: 1.5rem 1.25rem 4rem; }
+      .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+    }
+
+    /* ── Scrollbar ──────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4e637e; }
+  </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo"> _____ _____  _   _  ___________ _   _ _      _____ _____   ___ _____ _____
+/  ___/  __ \| | | ||  ___|  _  \ | | | |    |  ___|  __ \ / _ \_   _|  ___|
+\ `--. | /  \/| |_| || |__ | | | | | | | |    | |__ | |  \// /_\ \| | | |__
+ `--. \ |    |  _  ||  __|| | | | | | | |    |  __|| | __ |  _  || | |  __|
+/\__/ / \__/\| | | || |___| |/ /| |_| | |____| |___| |_\ \| | | || | | |___
+\____/ \____/\_| |_/\____/|___/  \___/\_____/\____/ \____/\_| |_/\_/ \____/
+                        Schedule Quality. Quantified.</div>
+
+    <div class="sidebar-label">Navigation</div>
+    <div class="sidebar-nav">
+      <a href="#overview">Overview</a>
+      <a href="#quickstart">Quick Start</a>
+      <a href="#flags">Command Flags</a>
+      <a href="#output-formats">Output Formats</a>
+      <a href="#audit-reference">Audit Reference</a>
+      <a href="#metrics">DCMA 14 Metrics</a>
+    </div>
+
+    <div class="sidebar-label" style="margin-top:.5rem;">Metrics</div>
+    <div class="sidebar-nav">
+      <a href="#metric-1"><span class="badge-id">1</span>Logic</a>
+      <a href="#metric-2"><span class="badge-id">2</span>Leads</a>
+      <a href="#metric-3"><span class="badge-id">3</span>Lags</a>
+      <a href="#metric-4"><span class="badge-id">4</span>Rel. Types</a>
+      <a href="#metric-5"><span class="badge-id">5</span>Hard Constraints</a>
+      <a href="#metric-6"><span class="badge-id">6</span>High Float</a>
+      <a href="#metric-7"><span class="badge-id">7</span>Negative Float</a>
+      <a href="#metric-8"><span class="badge-id">8</span>High Duration</a>
+      <a href="#metric-9"><span class="badge-id">9</span>Invalid Dates</a>
+      <a href="#metric-10"><span class="badge-id">10</span>Resources</a>
+      <a href="#metric-11"><span class="badge-id">11</span>Missed Tasks</a>
+      <a href="#metric-12"><span class="badge-id">12</span>Crit. Path Test</a>
+      <a href="#metric-13"><span class="badge-id">13</span>CPLI</a>
+      <a href="#metric-14"><span class="badge-id">14</span>BEI</a>
+    </div>
+  </nav>
+
+  <!-- ── Main content ─────────────────────────────────────────────────── -->
+  <main class="content">
+
+    <!-- ── Page Header ─────────────────────────────────────────────────── -->
+    <div class="page-header" id="overview">
+      <div class="logo-block"> _____ _____  _   _  ___________ _   _ _      _____ _____   ___ _____ _____
+/  ___/  __ \| | | ||  ___|  _  \ | | | |    |  ___|  __ \ / _ \_   _|  ___|
+\ `--. | /  \/| |_| || |__ | | | | | | | |    | |__ | |  \// /_\ \| | | |__
+ `--. \ |    |  _  ||  __|| | | | | | | |    |  __|| | __ |  _  || | |  __|
+/\__/ / \__/\| | | || |___| |/ /| |_| | |____| |___| |_\ \| | | || | | |___
+\____/ \____/\_| |_/\____/|___/  \___/\_____/\____/ \____/\_| |_/\_/ \____/
+                        Schedule Quality. Quantified.</div>
+      <h1>assess — User Manual</h1>
+      <p class="subtitle">
+        Perform the DCMA 14-Point Schedule Assessment on a Microsoft Project
+        export (Excel or CSV) and produce terminal, HTML, CSV, and Excel
+        exception reports.
+      </p>
+      <span class="version-badge">schedulegate v1.0.2&nbsp;·&nbsp;DCMA PAM Rev. B&nbsp;·&nbsp;August 2026</span>
+    </div>
+
+    <!-- ── Overview ─────────────────────────────────────────────────────── -->
+    <section id="overview-body">
+      <h2 class="section-title"><span class="section-icon">📋</span>Overview</h2>
+
+      <div class="card">
+        <p>
+          The <code>assess</code> command reads a schedule file and computes
+          up to <strong>14 health metrics</strong> defined by the Defense
+          Contract Management Agency (DCMA) <em>Program Assessment and
+          Reporting Manual (PAM)</em>. Each metric produces a
+          <strong>pass/fail</strong> verdict, a percentage value, and — where
+          applicable — a per-task <strong>exceptions list</strong> you can
+          export to Excel for corrective action.
+        </p>
+        <p>
+          The tool supports <strong>Excel (.xlsx)</strong> and
+          <strong>CSV</strong> schedule exports. Column headers are matched
+          case-insensitively with fuzzy alias resolution so most Microsoft
+          Project default layouts work without pre-processing.
+        </p>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>Scope of assessment:</strong> Summary tasks and milestones are
+        excluded from most metric denominators. The tool operates only on
+        <em>work (leaf) tasks</em> unless the metric explicitly involves
+        milestones (e.g. CPLI).
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>Task ID resolution:</strong> MS&nbsp;Project exports often
+        contain both a <code>Task ID</code> / <code>ID</code> column (the
+        sequential row number users see in the left-hand column) and a
+        <code>Unique ID</code> column (a permanent internal identifier).
+        When both are present the tool always uses <code>Task ID</code>, so
+        every value in the exceptions report maps directly to the row number
+        visible in the source schedule. <code>Unique ID</code> is used only
+        as a fallback when no primary <code>Task ID</code> column exists.
+      </div>
+    </section>
+
+    <!-- ── Quick Start ──────────────────────────────────────────────────── -->
+    <section id="quickstart">
+      <h2 class="section-title"><span class="section-icon">⚡</span>Quick Start</h2>
+
+      <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:.75rem;">
+        Minimum viable usage — run all 14 metrics and print to terminal:
+      </p>
+      <div class="cmd-block">
+        <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+        <span class="prompt">$ </span>schedulegate assess <span class="value">my_schedule.xlsx</span>
+      </div>
+
+      <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:.75rem;">
+        Full-featured run with all output formats:
+      </p>
+      <div class="cmd-block">
+        <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+        <span class="prompt">$ </span>schedulegate assess <span class="value">my_schedule.xlsx</span> \<br>
+&nbsp;&nbsp;<span class="flag">--customer</span> <span class="value">"Acme Corp"</span> <span class="flag">--project</span> <span class="value">"P-1042"</span> \<br>
+&nbsp;&nbsp;<span class="flag">--status-date</span> <span class="value">05/19/2026</span> \<br>
+&nbsp;&nbsp;<span class="flag">--html</span> <span class="value">report.html</span> \<br>
+&nbsp;&nbsp;<span class="flag">--csv</span> <span class="value">database.csv</span> \<br>
+&nbsp;&nbsp;<span class="flag">--exceptions-report</span> <span class="value">exceptions.xlsx</span> \<br>
+&nbsp;&nbsp;<span class="flag">--date-locale</span> <span class="value">US</span> <span class="flag">--pct-format</span> <span class="value">0-100</span> \<br>
+&nbsp;&nbsp;<span class="flag">--verbose</span>
+      </div>
+
+      <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:.75rem;">
+        Run only specific metrics (e.g. Logic, Lags, and BEI):
+      </p>
+      <div class="cmd-block">
+        <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
+        <span class="prompt">$ </span>schedulegate assess <span class="value">schedule.xlsx</span> <span class="flag">--metrics</span> <span class="value">1,3,14</span>
+      </div>
+    </section>
+
+    <!-- ── Flags ────────────────────────────────────────────────────────── -->
+    <section id="flags">
+      <h2 class="section-title"><span class="section-icon">🚩</span>Command Flags</h2>
+
+      <div class="flags-grid">
+
+        <!-- file (positional) -->
+        <div class="flag-card">
+          <div class="flag-name">file</div>
+          <div class="flag-desc">
+            Path to the schedule file to assess. Accepts
+            <code>.xlsx</code> (Microsoft Project Excel export) or
+            <code>.csv</code>.
+            <small>
+              Positional argument — must be the first argument after
+              <code>assess</code>. Required.
+            </small>
+          </div>
+          <span class="flag-tag tag-required">Required</span>
+        </div>
+
+        <!-- --metrics -->
+        <div class="flag-card">
+          <div class="flag-name">-m, --metrics</div>
+          <div class="flag-desc">
+            Comma-separated list of metric IDs to run (integers 1–14).
+            When omitted, all 14 metrics are executed.
+            <small>
+              Example: <code>--metrics 1,5,12</code>&nbsp;&nbsp;·&nbsp;&nbsp;
+              Run only Logic, Hard Constraints, and Critical Path Test.
+            </small>
+          </div>
+          <span class="flag-tag tag-optional">Optional</span>
+        </div>
+
+        <!-- --status-date -->
+        <div class="flag-card">
+          <div class="flag-name">--status-date</div>
+          <div class="flag-desc">
+            Override the schedule's status (data) date used for
+            date-dependent metrics (Invalid Dates, Missed Tasks, BEI, CPLI).
+            Defaults to <strong>today's date</strong> when not supplied.
+            <small>
+              Accepted formats: <code>YYYY-MM-DD</code> ·
+              <code>MM/DD/YYYY</code> · <code>MM-DD-YYYY</code> ·
+              <code>MM/DD/YY</code> · <code>MM-DD-YY</code>
+            </small>
+          </div>
+          <span class="flag-tag tag-optional">Optional</span>
+        </div>
+
+        <!-- --customer -->
+        <div class="flag-card">
+          <div class="flag-name">--customer</div>
+          <div class="flag-desc">
+            Customer name embedded in the HTML and CSV reports.
+            Does not affect metric calculations.
+            <small>Example: <code>--customer "Lockheed Martin"</code></small>
+          </div>
+          <span class="flag-tag tag-optional">Optional</span>
+        </div>
+
+        <!-- --project -->
+        <div class="flag-card">
+          <div class="flag-name">--project</div>
+          <div class="flag-desc">
+            Project number or identifier embedded in reports.
+            Does not affect metric calculations.
+            <small>Example: <code>--project "N00019-24-C-1234"</code></small>
+          </div>
+          <span class="flag-tag tag-optional">Optional</span>
+        </div>
+
+        <!-- --html -->
+        <div class="flag-card">
+          <div class="flag-name">--html</div>
+          <div class="flag-desc">
+            File path for the HTML assessment report. The file is
+            created (or overwritten) and automatically opened in the
+            default browser after generation.
+            <small>Example: <code>--html ./reports/assessment.html</code></small>
+          </div>
+          <span class="flag-tag tag-output">Output</span>
+        </div>
+
+        <!-- --csv -->
+        <div class="flag-card">
+          <div class="flag-name">--csv</div>
+          <div class="flag-desc">
+            File path for a CSV database file. Results are
+            <strong>appended</strong> (not overwritten), making this suitable
+            for tracking assessments across multiple schedule versions over
+            time. Optimised for Power BI ingestion.
+            <small>Example: <code>--csv ./db/history.csv</code></small>
+          </div>
+          <span class="flag-tag tag-output">Output</span>
+        </div>
+
+        <!-- --exceptions-report -->
+        <div class="flag-card">
+          <div class="flag-name">--exceptions-report</div>
+          <div class="flag-desc">
+            File path for an Excel workbook (<code>.xlsx</code>) listing
+            every task that triggered a metric violation, along with a
+            plain-English corrective action for the PM. One sheet per
+            metric.
+            <small>Example: <code>--exceptions-report exceptions.xlsx</code></small>
+          </div>
+          <span class="flag-tag tag-output">Output</span>
+        </div>
+
+        <!-- --pct-format -->
+        <div class="flag-card">
+          <div class="flag-name">--pct-format</div>
+          <div class="flag-desc">
+            Override the percent complete scale used when reading the schedule
+            file. MS Project exports percent complete as 0–100. Primavera and
+            some other tools use 0.0–1.0 (fraction).
+            <small>
+              Accepted values: <code>"0-100"</code> (default) ·
+              <code>"fraction"</code> (auto-multiplies by 100)
+            </small>
+          </div>
+          <span class="flag-tag tag-optional">Optional</span>
+        </div>
+
+        <!-- --date-locale -->
+        <div class="flag-card">
+          <div class="flag-name">--date-locale</div>
+          <div class="flag-desc">
+            Controls which date format is tried first when the reader
+            encounters an ambiguous datetime string. Affects
+            <code>Start</code>, <code>Finish</code>, and all baseline and
+            actual date columns.
+            <small>
+              Accepted values: <code>"US"</code> (MM/DD/YYYY first, default) ·
+              <code>"EU"</code> (DD/MM/YYYY first)
+            </small>
+          </div>
+          <span class="flag-tag tag-optional">Optional</span>
+        </div>
+
+        <!-- --debug-logic -->
+        <div class="flag-card">
+          <div class="flag-name">--debug-logic</div>
+          <div class="flag-desc">
+            Prints a per-task successor resolution trace during Metric 1
+            (Logic) assessment. Shows which tasks have successors inferred
+            from other tasks' predecessor strings, and which are missing
+            successors.
+            <small>
+              Useful when auditing Metric 1 results or troubleshooting
+              unexpected missing-logic percentages.
+            </small>
+          </div>
+          <span class="flag-tag tag-optional">Optional</span>
+        </div>
+
+        <!-- --verbose -->
+        <div class="flag-card">
+          <div class="flag-name">-v, --verbose</div>
+          <div class="flag-desc">
+            Appends raw numerator / denominator counts to each metric
+            row in the terminal output. Useful for auditing and
+            troubleshooting unexpected results.
+            <small>
+              Example output: <code>Logic&nbsp;&nbsp;3.2%&nbsp;&nbsp;[7 / 219]</code>
+            </small>
+          </div>
+          <span class="flag-tag tag-optional">Optional</span>
+        </div>
+
+      </div><!-- /flags-grid -->
+    </section>
+
+    <!-- ── Output Formats ───────────────────────────────────────────────── -->
+    <section id="output-formats">
+      <h2 class="section-title"><span class="section-icon">📤</span>Output Formats</h2>
+
+      <div class="output-cards">
+        <div class="output-card">
+          <div class="output-icon">🖥️</div>
+          <div class="output-title">Terminal</div>
+          <div class="output-desc">
+            Always produced. Shows the ASCII logo, overall score card, and
+            a colour-coded pass/fail row per metric. Add
+            <code>--verbose</code> for raw counts.
+          </div>
+        </div>
+        <div class="output-card">
+          <div class="output-icon">🌐</div>
+          <div class="output-title">HTML Report</div>
+          <div class="output-desc">
+            Dark-theme interactive report with score gauge, metric results,
+            and expandable exceptions table. Auto-opens in browser.
+            Triggered by <code>--html</code>.
+          </div>
+        </div>
+        <div class="output-card">
+          <div class="output-icon">📊</div>
+          <div class="output-title">CSV Database</div>
+          <div class="output-desc">
+            One row per assessment run appended to a flat file. Designed
+            for trend analysis and Power BI dashboards.
+            Triggered by <code>--csv</code>.
+          </div>
+        </div>
+        <div class="output-card">
+          <div class="output-icon">📁</div>
+          <div class="output-title">Excel Exceptions</div>
+          <div class="output-desc">
+            Multi-sheet Excel workbook. Each failing metric gets its own
+            sheet listing offending Task IDs, names, and corrective
+            guidance. Triggered by <code>--exceptions-report</code>.
+            Task IDs shown always match the <strong>Task ID / ID</strong>
+            column from the source schedule (the sequential row number
+            visible in MS&nbsp;Project's left-hand column), so flagged
+            tasks can be located directly without any ID translation.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Audit Reference ──────────────────────────────────────────────── -->
+    <section id="audit-reference">
+      <h2 class="section-title"><span class="section-icon">🔍</span>Audit Reference</h2>
+
+      <div class="callout callout-info">
+        <strong>Purpose:</strong> This section documents every convention the tool uses
+        so that auditors can reproduce any result independently from raw schedule data.
+      </div>
+
+      <!-- Overall scoring -->
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="info-block-label" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.6rem;">Overall Score Formula</div>
+        <p style="font-size:.9rem;">The overall score shown at the top of the report is simply:</p>
+        <div class="formula" style="display:block;margin:.5rem 0;">
+          Overall Score = metrics that PASS ÷ metrics that ran (excluding N/A)
+        </div>
+        <p style="font-size:.83rem;color:var(--text-muted);margin-top:.5rem;">
+          A metric is excluded from the denominator only when it returns
+          <strong>N/A</strong> (currently only Metric 10 — Resources, when no resource
+          column is present in the export). Binary metrics (Metric 12) count as
+          1 pass or 1 fail, never fractional.
+        </p>
+      </div>
+
+      <!-- Work task definition -->
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="info-block-label" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.6rem;">"Work Task" — Population Definition</div>
+        <p style="font-size:.9rem;">Most metrics operate on the <em>work task</em> population,
+        defined as tasks where <strong>all</strong> of the following hold:</p>
+        <ul style="margin:.5rem 0 .5rem 1.2rem;">
+          <li><code>IsSummary = false</code> — roll-up summary rows are excluded</li>
+          <li><code>IsMilestone = false</code> — zero-duration milestones are excluded</li>
+        </ul>
+        <p style="font-size:.9rem;">
+          Metrics that additionally restrict to <em>incomplete</em> tasks further require
+          <code>PercentComplete &lt; 100</code>.
+          The one exception is <strong>Metric 5 (Hard Constraints)</strong>, whose
+          population includes milestones but excludes summary tasks, because a
+          hard-constrained milestone is a genuine network violation.
+        </p>
+        <div class="exception-tags" style="margin-top:.6rem;">
+          <span class="exc-tag">Summary rows: always excluded</span>
+          <span class="exc-tag">Milestones: excluded from most metrics</span>
+          <span class="exc-tag">Milestones: included in Metric 5 only</span>
+          <span class="exc-tag">Milestones: included in CPLI completion search (Metric 13)</span>
+        </div>
+      </div>
+
+      <!-- Predecessor token format -->
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="info-block-label" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.6rem;">Predecessor String Parsing (Metrics 1–4)</div>
+        <p style="font-size:.9rem;">
+          The <code>Predecessors</code> column is a delimited string of one or more
+          relationship tokens. The tool splits on commas (<code>,</code>) and
+          semicolons (<code>;</code>) then parses each token with the grammar:
+        </p>
+        <div class="formula" style="display:block;margin:.5rem 0;">
+          token  = &lt;TaskID&gt; [ &lt;RelType&gt; ] [ sign &lt;magnitude&gt; &lt;unit&gt; ]<br>
+          RelType = FS | SS | FF | SF  (default: FS if omitted)<br>
+          sign    = + (positive lag) | - (negative lag / lead)<br>
+          unit    = d (days) | w (weeks)
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.84rem;margin-top:.65rem;">
+          <thead>
+            <tr style="color:var(--text-muted);border-bottom:1px solid var(--border);">
+              <th style="text-align:left;padding:.3rem .6rem;">Token example</th>
+              <th style="text-align:left;padding:.3rem .6rem;">Interpretation</th>
+              <th style="text-align:left;padding:.3rem .6rem;">Affects</th>
+            </tr>
+          </thead>
+          <tbody style="color:var(--text-main);">
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;font-family:monospace;color:#fde68a;">5</td>
+              <td style="padding:.3rem .6rem;">Task 5, FS, no lag — compliant</td>
+              <td style="padding:.3rem .6rem;">Metric 1, 4</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;font-family:monospace;color:#fde68a;">5FS</td>
+              <td style="padding:.3rem .6rem;">Task 5, Finish-to-Start — compliant</td>
+              <td style="padding:.3rem .6rem;">Metric 1, 4</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;font-family:monospace;color:#fde68a;">5SS</td>
+              <td style="padding:.3rem .6rem;">Task 5, Start-to-Start — non-FS violation</td>
+              <td style="padding:.3rem .6rem;">Metric 4</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;font-family:monospace;color:#fde68a;">5FS+3d</td>
+              <td style="padding:.3rem .6rem;">Task 5, FS, +3 day lag violation</td>
+              <td style="padding:.3rem .6rem;">Metric 3</td>
+            </tr>
+            <tr>
+              <td style="padding:.3rem .6rem;font-family:monospace;color:#fde68a;">5FS-3d</td>
+              <td style="padding:.3rem .6rem;">Task 5, FS, –3 day lead violation</td>
+              <td style="padding:.3rem .6rem;">Metric 2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Field units -->
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="info-block-label" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.6rem;">Schedule Field Units &amp; Data Types</div>
+        <table style="width:100%;border-collapse:collapse;font-size:.84rem;">
+          <thead>
+            <tr style="color:var(--text-muted);border-bottom:1px solid var(--border);">
+              <th style="text-align:left;padding:.3rem .6rem;">Field</th>
+              <th style="text-align:left;padding:.3rem .6rem;">Unit / Type</th>
+              <th style="text-align:left;padding:.3rem .6rem;">Used by Metric(s)</th>
+            </tr>
+          </thead>
+          <tbody style="color:var(--text-main);">
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;"><code>TotalSlack</code></td>
+              <td style="padding:.3rem .6rem;">Decimal working days (float)</td>
+              <td style="padding:.3rem .6rem;">6, 7, 12, 13</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;"><code>BaselineDuration</code></td>
+              <td style="padding:.3rem .6rem;">Decimal working days (float)</td>
+              <td style="padding:.3rem .6rem;">8</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;"><code>PercentComplete</code></td>
+              <td style="padding:.3rem .6rem;">0–100 (numeric)</td>
+              <td style="padding:.3rem .6rem;">1–11, 14</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;"><code>Start / Finish</code></td>
+              <td style="padding:.3rem .6rem;">Forecast dates</td>
+              <td style="padding:.3rem .6rem;">9, 13</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;"><code>ActualStart / ActualFinish</code></td>
+              <td style="padding:.3rem .6rem;">Actuals dates (nil = not yet set)</td>
+              <td style="padding:.3rem .6rem;">9</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:.3rem .6rem;"><code>BaselineFinish</code></td>
+              <td style="padding:.3rem .6rem;">Date (nil = no baseline)</td>
+              <td style="padding:.3rem .6rem;">11, 14</td>
+            </tr>
+            <tr>
+              <td style="padding:.3rem .6rem;"><code>ConstraintType</code></td>
+              <td style="padding:.3rem .6rem;">String (case-insensitive)</td>
+              <td style="padding:.3rem .6rem;">5</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section><!-- /audit-reference -->
+
+    <!-- ── Metrics ───────────────────────────────────────────────────────── -->
+    <section id="metrics">
+      <h2 class="section-title"><span class="section-icon">📐</span>DCMA 14-Point Metrics</h2>
+
+      <div class="callout callout-tip">
+        <strong>Transparency note:</strong> Every metric below documents exactly
+        what population is selected, which field drives the calculation, the
+        formula used, and the DCMA PAM reference. This section is intended
+        to be shared with PMs so they understand precisely why a task was
+        flagged.
+      </div>
+
+      <!-- Search & filter -->
+      <input
+        class="metric-search"
+        id="metricSearch"
+        type="search"
+        placeholder="Search metrics by name, PAM reference, or keyword…"
+        oninput="filterMetrics()"
+      />
+
+      <div class="metric-filter-bar">
+        <button class="filter-btn active" onclick="setFilter('all', this)">All (14)</button>
+        <button class="filter-btn" onclick="setFilter('network', this)">Network Logic</button>
+        <button class="filter-btn" onclick="setFilter('float', this)">Float</button>
+        <button class="filter-btn" onclick="setFilter('schedule', this)">Schedule Health</button>
+        <button class="filter-btn" onclick="setFilter('performance', this)">Performance</button>
+        <button class="filter-btn" onclick="toggleAll(true)">Expand All</button>
+        <button class="filter-btn" onclick="toggleAll(false)">Collapse All</button>
+      </div>
+
+      <!-- ── Metric 1: Logic ───────────────────────────────────────────── -->
+      <div class="metric-item" id="metric-1" data-tags="network logic predecessor successor">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">1</div>
+          <div class="metric-title-group">
+            <strong>Logic</strong>
+            <span class="pam-ref">PAM § 4.1 — Network Logic</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 10%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Measures whether every incomplete work task is wired into the
+            network — i.e., has at least one incoming (predecessor) and one
+            outgoing (successor) logic link.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of incomplete non-summary, non-milestone tasks
+              that are missing a predecessor, a successor, or both.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Population</div>
+              <p>All tasks where <code>IsSummary = false</code>,
+              <code>IsMilestone = false</code>, and
+              <code>PercentComplete &lt; 100</code>.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">tasks missing pred or succ ÷ total incomplete tasks</div>
+              <p style="margin-top:.5rem;font-size:.83rem;color:var(--text-muted);">
+                Successor presence is inferred: a task is considered to have a
+                successor if its Task ID appears in any other task's
+                Predecessors field.
+              </p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 10 %. Lower is better.</p>
+            </div>
+          </div>
+          <div class="info-block" style="margin-top:.8rem;">
+            <div class="info-block-label">Exception conditions</div>
+            <div class="exception-tags">
+              <span class="exc-tag">No predecessor or successor (island)</span>
+              <span class="exc-tag">Missing predecessor only</span>
+              <span class="exc-tag">Missing successor only</span>
+            </div>
+            <p style="font-size:.82rem;color:var(--text-muted);margin-top:.5rem;">
+              Corrective guidance in exceptions report: add Finish-to-Start
+              logic links to fill gaps.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 2: Leads ───────────────────────────────────────────── -->
+      <div class="metric-item" id="metric-2" data-tags="network leads negative lag">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">2</div>
+          <div class="metric-title-group">
+            <strong>Leads</strong>
+            <span class="pam-ref">PAM § 4.2 — Leads (Negative Lag)</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 5%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Negative lag (a "lead") allows a successor to start before its
+            predecessor finishes. DCMA treats this as artificial schedule
+            compression that hides true logic; the PAM goal is zero, and this
+            tool's pass threshold is ≤ 5%.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of predecessor relationships on incomplete
+              tasks that carry a negative lag value.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Population</div>
+              <p>All individual predecessor links on incomplete, non-summary,
+              non-milestone tasks. Denominator is <em>relationships</em>,
+              not tasks.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">links with negative lag ÷ total predecessor links</div>
+              <p style="margin-top:.5rem;font-size:.83rem;color:var(--text-muted);">
+                A predecessor token like <code>5FS-3d</code> indicates a
+                3-day lead and is counted as a violation.
+              </p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 5 %. Lower is better.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 3: Lags ────────────────────────────────────────────── -->
+      <div class="metric-item" id="metric-3" data-tags="network lags positive lag">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">3</div>
+          <div class="metric-title-group">
+            <strong>Lags</strong>
+            <span class="pam-ref">PAM § 4.3 — Lags (Positive Lag)</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 10%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Positive lags introduce waiting time between a predecessor and
+            successor without an explicit task representing that work. DCMA
+            requires any delay to be modelled as a real task so it can be
+            tracked and resourced.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of predecessor relationships on incomplete
+              tasks that carry a positive lag value.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Population</div>
+              <p>Same as Leads: individual predecessor links on incomplete
+              work tasks.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">links with positive lag ÷ total predecessor links</div>
+              <p style="margin-top:.5rem;font-size:.83rem;color:var(--text-muted);">
+                Token like <code>22FS+5d</code> counts as a lag violation.
+              </p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 10 %. Insert an
+              intermediate task to model the delay instead.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 4: Relationship Types ──────────────────────────────── -->
+      <div class="metric-item" id="metric-4" data-tags="network relationship types FS SS FF">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">4</div>
+          <div class="metric-title-group">
+            <strong>Relationship Types</strong>
+            <span class="pam-ref">PAM § 4.4 — FS Relationships</span>
+          </div>
+          <span class="metric-threshold threshold-gte">≥ 90%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Finish-to-Start (FS) is the only relationship type that models
+            true sequential work. SS, FF, and SF relationships often mask
+            schedule compression or insufficient decomposition.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The proportion of all predecessor links on incomplete work
+              tasks that use the Finish-to-Start relationship type.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Population</div>
+              <p>All predecessor links on incomplete work tasks. Links with
+              no explicit type token are assumed to be FS (MS Project
+              default).</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">FS links ÷ total links</div>
+              <p style="margin-top:.5rem;font-size:.83rem;color:var(--text-muted);">
+                A token like <code>5SS</code> is a non-FS violation.
+                A bare <code>5</code> defaults to FS and counts as
+                compliant.
+              </p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≥ 90 %. Higher is better;
+              100 % is ideal.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 5: Hard Constraints ─────────────────────────────────── -->
+      <div class="metric-item" id="metric-5" data-tags="schedule hard constraints MFO MSO SNLT FNLT">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">5</div>
+          <div class="metric-title-group">
+            <strong>Hard Constraints</strong>
+            <span class="pam-ref">PAM § 4.5 — Constraints</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 5%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Hard constraints lock a task to a specific date, overriding
+            network-driven scheduling. They inflate float values and prevent
+            the critical path from being computed correctly.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of incomplete tasks (including milestones but
+              excluding summary tasks) that carry a hard constraint type.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Hard constraint types detected</div>
+              <div class="exception-tags">
+                <span class="exc-tag">Must Finish On (MFO)</span>
+                <span class="exc-tag">Must Start On (MSO)</span>
+                <span class="exc-tag">Start No Later Than (SNLT)</span>
+                <span class="exc-tag">Finish No Later Than (FNLT)</span>
+              </div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">tasks with hard constraint ÷ total incomplete tasks</div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 5 %. Replace with
+              ASAP or Start No Earlier Than (SNET) where possible.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 6: High Float ────────────────────────────────────────── -->
+      <div class="metric-item" id="metric-6" data-tags="float high float total slack">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">6</div>
+          <div class="metric-title-group">
+            <strong>High Float</strong>
+            <span class="pam-ref">PAM § 4.6 — High Float</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 10%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Excessive total float (slack) indicates a task is poorly
+            connected to the rest of the network — usually caused by missing
+            successor links, hard constraints, or an unrealistically late
+            project finish milestone.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of incomplete work tasks whose
+              <code>Total Slack</code> field exceeds the 60-working-day
+              threshold.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold value</div>
+              <p>60 working days (~3 calendar months). Tasks with
+              <code>TotalSlack &gt; 60</code> are flagged.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">tasks with TotalSlack &gt; 60 ÷ total incomplete work tasks</div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 10 %. Lower is better.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 7: Negative Float ───────────────────────────────────── -->
+      <div class="metric-item" id="metric-7" data-tags="float negative float total slack behind schedule">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">7</div>
+          <div class="metric-title-group">
+            <strong>Negative Float</strong>
+            <span class="pam-ref">PAM § 4.7 — Negative Float</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 5%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Negative float means a task is already late relative to its
+            constraint or project finish date. It typically signals a hard
+            constraint, an overly compressed logic path, or an unrealistic
+            baseline.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of incomplete work tasks with a
+              <code>TotalSlack &lt; 0</code>.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Root causes</div>
+              <ul>
+                <li>Hard constraint (MFO/MSO/FNLT/SNLT) overriding logic</li>
+                <li>Task duration longer than available time window</li>
+                <li>Predecessor chain longer than expected finish</li>
+              </ul>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">tasks with TotalSlack &lt; 0 ÷ total incomplete work tasks</div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 5 %. Zero is ideal.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 8: High Duration ────────────────────────────────────── -->
+      <div class="metric-item" id="metric-8" data-tags="schedule high duration baseline duration work package">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">8</div>
+          <div class="metric-title-group">
+            <strong>High Duration</strong>
+            <span class="pam-ref">PAM § 4.8 — Duration</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 10%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Long work packages are harder to track, resource, and recover
+            when they slip. DCMA requires work packages to be decomposed so
+            no single task exceeds three months (60 working days).
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of incomplete work tasks whose
+              <code>Baseline Duration</code> exceeds 60 working days.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Field used</div>
+              <p><code>BaselineDuration</code> (working days). Uses the
+              baseline, not the current duration, to detect over-long
+              original plans.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">tasks with BaselineDuration &gt; 60 ÷ total incomplete work tasks</div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 10 %. Break violating
+              tasks into sub-tasks of ≤ 60 working days.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 9: Invalid Dates ────────────────────────────────────── -->
+      <div class="metric-item" id="metric-9" data-tags="schedule dates invalid dates status date data date">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">9</div>
+          <div class="metric-title-group">
+            <strong>Invalid Dates</strong>
+            <span class="pam-ref">PAM § 4.9 — Invalid Dates</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 5%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Dates that are inconsistent with the status (data) date indicate
+            a stale schedule or incorrect actuals. Any incomplete task with
+            forecast dates in the past, or actual dates in the future, is
+            flagged.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">Conditions checked</div>
+              <div class="exception-tags">
+                <span class="exc-tag">Forecast Start before status date</span>
+                <span class="exc-tag">Forecast Finish before status date</span>
+                <span class="exc-tag">Actual Start after status date</span>
+                <span class="exc-tag">Actual Finish after status date</span>
+              </div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Population</div>
+              <p>Incomplete work tasks only (<code>PercentComplete &lt; 100</code>,
+              non-summary, non-milestone). The status date defaults to
+              today unless overridden via <code>--status-date</code>.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">tasks with any invalid date ÷ total incomplete work tasks</div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 5 %.
+              Use <code>--status-date</code> to align to the schedule's
+              actual data date if the default (today) is incorrect.</p>
+            </div>
+          </div>
+          <div class="callout callout-warn" style="margin-top:.8rem;">
+            <strong>Tip:</strong> If you export a schedule that was last
+            updated weeks ago, set <code>--status-date</code> to the
+            schedule's actual data date to avoid false positives on this
+            metric.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 10: Resources ───────────────────────────────────────── -->
+      <div class="metric-item" id="metric-10" data-tags="schedule resources assigned resource loading">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">10</div>
+          <div class="metric-title-group">
+            <strong>Resources</strong>
+            <span class="pam-ref">PAM § 4.10 — Resource Loading</span>
+          </div>
+          <span class="metric-threshold threshold-gte">≥ 95%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            Resource-loading a schedule is required to support earned value
+            analysis and cost performance tracking. Unresourced tasks cannot
+            yield reliable BCWS/BCWP values.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of incomplete work tasks that have at least
+              one resource assigned in the <code>Resources</code> column.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">N/A handling</div>
+              <p>If <em>no task in the entire schedule</em> has a resource
+              assigned, the metric is marked <strong>N/A</strong> and
+              excluded from the pass/fail tally. This handles schedules
+              exported without resource columns.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">tasks with at least 1 resource ÷ total incomplete work tasks</div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≥ 95 %. Higher is better.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 11: Missed Tasks ────────────────────────────────────── -->
+      <div class="metric-item" id="metric-11" data-tags="schedule performance missed tasks baseline finish">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">11</div>
+          <div class="metric-title-group">
+            <strong>Missed Tasks</strong>
+            <span class="pam-ref">PAM § 4.11 — Schedule Adherence</span>
+          </div>
+          <span class="metric-threshold threshold-lte">≤ 5%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            A task is "missed" when its baseline finish date has passed but
+            it is not yet 100% complete. High missed-task rates indicate a
+            schedule that is no longer representative of actual progress.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The percentage of work tasks whose
+              <code>BaselineFinish ≤ StatusDate</code> that are still
+              incomplete (<code>PercentComplete &lt; 100</code>).</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Population</div>
+              <p>Only tasks that were due by the status date
+              (<code>BaselineFinish ≤ StatusDate</code>) are included in
+              the denominator. Tasks with no baseline finish are excluded.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">past-due incomplete tasks ÷ all tasks due by status date</div>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when result ≤ 5 %. Corrective action:
+              update actual progress or revise the baseline.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 12: Critical Path Test ─────────────────────────────── -->
+      <div class="metric-item" id="metric-12" data-tags="performance critical path network binary">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">12</div>
+          <div class="metric-title-group">
+            <strong>Critical Path Test</strong>
+            <span class="pam-ref">PAM § 4.12 — Critical Path Validity</span>
+          </div>
+          <span class="metric-threshold threshold-binary">Pass / Fail</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            A valid critical path must exist: at least one work task must
+            have zero or negative total float, confirming the scheduler is
+            driving the finish date through network logic rather than hard
+            constraints.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>Binary test: does any non-summary, non-milestone work task have
+              <code>TotalSlack ≤ 0</code>? Yes = Pass, No = Fail.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Why summary tasks and milestones are excluded</div>
+              <p>Summary task <code>TotalSlack</code> values are roll-ups derived from
+              child tasks, not independent network-driven float. Milestone float can
+              be zero trivially by constraint. Using either would produce false
+              positives.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Formula</div>
+              <div class="formula">COUNT(work tasks where TotalSlack ≤ 0) &gt; 0</div>
+              <p style="margin-top:.5rem;font-size:.83rem;color:var(--text-muted);">
+                Population = <code>IsSummary = false AND IsMilestone = false</code>.
+                If count &gt; 0 → Pass (value = 1.0). If count = 0 → Fail (value = 0.0).
+              </p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Threshold &amp; direction</div>
+              <p><strong>Pass</strong> when at least one critical work task
+              exists. No per-task exceptions are generated — the test is
+              schedule-level. The Details field exposes the raw
+              <code>critical_tasks</code> count for transparency.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 13: CPLI ─────────────────────────────────────────────── -->
+      <div class="metric-item" id="metric-13" data-tags="performance cpli critical path length index">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">13</div>
+          <div class="metric-title-group">
+            <strong>Critical Path Length Index (CPLI)</strong>
+            <span class="pam-ref">PAM § 3.1.2.3 — Schedule Efficiency</span>
+          </div>
+          <span class="metric-threshold threshold-gte">≥ 1.0</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            CPLI quantifies schedule efficiency relative to the critical path.
+            A value below 1.0 signals the project is behind schedule and
+            cannot finish on time under current conditions. A value above 1.0
+            indicates schedule margin.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The ratio of "available time plus total float" to the
+              remaining critical path duration. A schedule-level index, not
+              task-level.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Completion task selection</div>
+              <p>The tool scans all non-summary tasks (milestones
+              <em>included</em>) that have a non-nil forecast finish date and
+              selects the one with the latest <code>Finish</code>. That task
+              provides both the project end date and the <code>TotalSlack</code>
+              used in the formula.</p>
+            </div>
+            <div class="info-block" style="grid-column:1/-1">
+              <div class="info-block-label">Step-by-step calculation (reproducible)</div>
+              <div class="formula" style="display:block;line-height:1.9;margin-bottom:.4rem;">
+                Step 1 — find completion task:<br>
+                &nbsp;&nbsp;completionTask = task with max(Finish) where IsSummary = false<br><br>
+                Step 2 — remaining calendar days:<br>
+                &nbsp;&nbsp;calDays = (completionTask.Finish − StatusDate) in whole days<br><br>
+                Step 3 — convert to working days (5-day week, no holiday calendar):<br>
+                &nbsp;&nbsp;CPL = calDays × (5 ÷ 7)<br><br>
+                Step 4 — total float from completion task:<br>
+                &nbsp;&nbsp;TF = completionTask.TotalSlack  (working days, can be negative)<br><br>
+                Step 5 — index:<br>
+                &nbsp;&nbsp;CPLI = (CPL + TF) ÷ CPL
+              </div>
+              <p style="font-size:.83rem;color:var(--text-muted);">
+                If <code>CPL ≤ 0</code> (status date is at or past the project finish),
+                CPLI returns 1.0 / Pass automatically — the schedule has no remaining
+                critical path to measure. No per-task exceptions are produced; the
+                <code>Details</code> field exposes raw <code>cpl</code> and
+                <code>tf</code> values for independent verification.
+              </p>
+            </div>
+          </div>
+          <div class="callout callout-info" style="margin-top:.8rem;">
+            <strong>Interpretation:</strong> CPLI = 1.0 means exactly on
+            time. CPLI &gt; 1.0 means margin exists (positive TF). CPLI &lt; 1.0 means
+            recovery is required. A value of 0.95, for example, means the schedule
+            needs to be executed 5 % faster than planned to hit the current finish date.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Metric 14: BEI ─────────────────────────────────────────────── -->
+      <div class="metric-item" id="metric-14" data-tags="performance bei baseline execution index earned value">
+        <div class="metric-header" onclick="toggleMetric(this)">
+          <div class="metric-id">14</div>
+          <div class="metric-title-group">
+            <strong>Baseline Execution Index (BEI)</strong>
+            <span class="pam-ref">DCMA BEI — Schedule Execution</span>
+          </div>
+          <span class="metric-threshold threshold-gte">≥ 95%</span>
+          <span class="metric-chevron">▾</span>
+        </div>
+        <div class="metric-body">
+          <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
+            BEI measures how many tasks were actually completed relative to
+            how many were planned to be complete by the status date. It is a
+            leading indicator of schedule execution health and correlates
+            with CPI/SPI in earned value analysis.
+          </p>
+          <div class="metric-body-grid">
+            <div class="info-block">
+              <div class="info-block-label">What it measures</div>
+              <p>The ratio of completed work tasks to all work tasks whose
+              baseline finish was on or before the status date.</p>
+            </div>
+            <div class="info-block">
+              <div class="info-block-label">Population (both variables)</div>
+              <p>
+                Work tasks only (<code>IsSummary = false</code>,
+                <code>IsMilestone = false</code>).
+                Tasks with a null <code>BaselineFinish</code> are excluded
+                from the denominator but are still counted in the
+                numerator if complete.
+              </p>
+            </div>
+            <div class="info-block" style="grid-column:1/-1">
+              <div class="info-block-label">Exact formula &amp; variable definitions</div>
+              <div class="formula" style="display:block;line-height:1.9;margin-bottom:.4rem;">
+                Numerator   = COUNT(work tasks where PercentComplete = 100)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ALL completed work tasks, regardless of whether they had a baseline]<br><br>
+                Denominator = COUNT(work tasks where BaselineFinish ≤ StatusDate<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND BaselineFinish ≠ null)<br><br>
+                BEI = Numerator ÷ Denominator
+              </div>
+              <p style="margin-top:.4rem;font-size:.83rem;color:var(--text-muted);">
+                <strong>Auditor note — why BEI can exceed 1.0:</strong>
+                Because the numerator counts <em>all</em> completed tasks
+                (including those that finished ahead of their baseline), while
+                the denominator counts only tasks due by the status date,
+                BEI will be &gt; 1.0 when a significant number of tasks
+                completed early. This is intentional — early completion is
+                rewarded as positive execution performance. Conversely, if
+                many tasks were completed but none had baselined finish dates
+                on or before the status date, the denominator approaches zero
+                and BEI is returned as 1.0 / Pass (no exceptions).
+              </p>
+            </div>
+          </div>
+          <div class="callout callout-warn" style="margin-top:.8rem;">
+            <strong>Edge case:</strong> If <code>Denominator = 0</code>
+            (no tasks have a baseline finish on or before the status date —
+            schedule is entirely future-dated or has no baseline), BEI
+            returns <strong>1.0 / Pass</strong> with zero exceptions. No
+            assessment is possible without historical baseline data.
+          </div>
+          <div class="callout callout-info" style="margin-top:.5rem;">
+            <strong>Corrective action when BEI &lt; 0.95:</strong>
+            Each incomplete task in the exceptions report was planned to
+            finish before the status date. Record actual progress or
+            re-baseline tasks that have genuinely been descoped. The
+            <code>Details</code> field exposes <code>completed</code>,
+            <code>baseline_count</code>, and <code>missing_baseline</code>
+            counts for full traceability.
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /metrics -->
+
+    <!-- ── Footer ─────────────────────────────────────────────────────── -->
+    <hr>
+    <p style="font-size:.8rem;color:var(--text-muted);text-align:center;">
+      schedulegate v1.0.2 &nbsp;·&nbsp; DCMA PAM Rev. B metrics &nbsp;·&nbsp;
+      Updated August 2026
+    </p>
+
+  </main>
+</div>
+
+<!-- Mobile menu button -->
+<button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Toggle menu">☰</button>
+
+<script>
+  /* ── Copy command ───────────────────────────────────────────────────── */
+  function copyCmd(btn) {
+    const block = btn.closest('.cmd-block');
+    const text = block.innerText.replace(/^Copy\n?/, '').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  /* ── Accordion ──────────────────────────────────────────────────────── */
+  function toggleMetric(header) {
+    const item = header.closest('.metric-item');
+    item.classList.toggle('open');
+  }
+
+  function toggleAll(open) {
+    document.querySelectorAll('.metric-item').forEach(item => {
+      if (open) item.classList.add('open');
+      else item.classList.remove('open');
+    });
+  }
+
+  /* ── Search ─────────────────────────────────────────────────────────── */
+  function filterMetrics() {
+    const q = document.getElementById('metricSearch').value.toLowerCase();
+    document.querySelectorAll('.metric-item').forEach(item => {
+      const text = (item.innerText + ' ' + (item.dataset.tags || '')).toLowerCase();
+      item.classList.toggle('hidden', q.length > 0 && !text.includes(q));
+    });
+  }
+
+  /* ── Category filter ────────────────────────────────────────────────── */
+  const categoryMap = {
+    network:     ['1','2','3','4'],
+    float:       ['6','7'],
+    schedule:    ['5','8','9','10','11'],
+    performance: ['12','13','14'],
+  };
+
+  function setFilter(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.metric-item').forEach(item => {
+      if (cat === 'all') { item.classList.remove('hidden'); return; }
+      const id = item.id.replace('metric-', '');
+      item.classList.toggle('hidden', !categoryMap[cat].includes(id));
+    });
+  }
+
+  /* ── Sidebar active link ─────────────────────────────────────────────── */
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const match = document.querySelector(`.sidebar-nav a[href="#${e.target.id}"]`);
+        if (match) match.classList.add('active');
+      }
+    });
+  }, { threshold: 0.35 });
+
+  document.querySelectorAll('section[id], div[id]').forEach(el => observer.observe(el));
+
+  /* ── Close sidebar on outside click (mobile) ─────────────────────────── */
+  document.addEventListener('click', e => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('open') &&
+        !sidebar.contains(e.target) &&
+        !e.target.closest('.mobile-menu-btn')) {
+      sidebar.classList.remove('open');
+    }
+  });
+</script>
+</body>
+</html>

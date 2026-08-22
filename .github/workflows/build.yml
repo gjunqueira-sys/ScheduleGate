@@ -1,0 +1,201 @@
+name: Build
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+env:
+  # Test-only HMAC secret embedded into CI smoke binaries so the built artifact
+  # can mint/validate a Pro license and exercise Pro-gated commands (compare,
+  # check-patterns, JSON/CSV/Excel output). Smoke binaries are never shipped, so
+  # this is not the production signing secret.
+  CI_LICENSE_SECRET: schedulegate-ci-smoke-test-secret-2026
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Vet
+        run: go vet ./...
+      - name: Test
+        run: go test ./...
+      - name: Coverage gate
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          go test ./... -coverprofile=/tmp/coverage.out >/dev/null
+          coverage=$(go tool cover -func=/tmp/coverage.out | tail -1 | awk '{print $NF}' | tr -d '%')
+          echo "Total coverage: ${coverage}%"
+          if (( $(echo "$coverage < 55" | bc -l) )); then
+            echo "::error::Coverage ${coverage}% is below the 55% minimum gate."
+            exit 1
+          fi
+
+  build-and-smoke:
+    name: Build + smoke (${{ matrix.name }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64
+            os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            bin: bin/schedulegate
+          - name: darwin-arm64
+            os: macos-14
+            goos: darwin
+            goarch: arm64
+            bin: bin/schedulegate
+          - name: windows-amd64
+            os: windows-latest
+            goos: windows
+            goarch: amd64
+            bin: bin/schedulegate.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Generate fixtures
+        run: |
+          go run ./cmd/genfixture "${{ runner.temp }}/schedule.xlsx"
+          go run ./cmd/genfixture "${{ runner.temp }}/schedule-curr.xlsx"
+      - name: Build
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: mkdir -p bin && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X github.com/gjunqueira-sys/ScheduleGate/internal/license.SecretKey=${{ env.CI_LICENSE_SECRET }}" -o ${{ matrix.bin }} main.go
+      - name: Smoke — version
+        run: ./${{ matrix.bin }} --version
+      - name: Smoke — validate
+        run: ./${{ matrix.bin }} validate "${{ runner.temp }}/schedule.xlsx"
+      - name: Smoke — mint CI license key
+        shell: bash
+        run: |
+          KEY=$(./${{ matrix.bin }} license generate --key-only --tier pro --email ci@schedulegate.dev --expiry 2035-01-01)
+          echo "Minted key length: ${#KEY}"
+          echo "SG_KEY=$KEY" >> "$GITHUB_ENV"
+      - name: Smoke — assess
+        run: ./${{ matrix.bin }} assess "${{ runner.temp }}/schedule.xlsx" --metrics 1 --status-date 2026-04-10
+      - name: Smoke — assess --json
+        shell: bash
+        run: ./${{ matrix.bin }} assess "${{ runner.temp }}/schedule.xlsx" --metrics 1 --status-date 2026-04-10 --license-key "${{ env.SG_KEY }}" --json
+      - name: Smoke — assess JSON/CSV/Excel outputs
+        shell: bash
+        run: |
+          ./${{ matrix.bin }} assess "${{ runner.temp }}/schedule.xlsx" --metrics 1,5,12 --status-date 2026-04-10 \
+            --license-key "${{ env.SG_KEY }}" \
+            --json-output "${{ runner.temp }}/report.json" \
+            --csv "${{ runner.temp }}/db.csv" \
+            --exceptions-report "${{ runner.temp }}/exceptions.xlsx"
+          test -s "${{ runner.temp }}/report.json"
+          test -s "${{ runner.temp }}/db.csv"
+          test -s "${{ runner.temp }}/exceptions.xlsx"
+      - name: Smoke — compare
+        shell: bash
+        run: ./${{ matrix.bin }} compare "${{ runner.temp }}/schedule.xlsx" "${{ runner.temp }}/schedule-curr.xlsx" --status-date 2026-04-10 --license-key "${{ env.SG_KEY }}" --json
+      - name: Smoke — check-patterns
+        shell: bash
+        run: ./${{ matrix.bin }} check-patterns "${{ runner.temp }}/schedule.xlsx" --rules sample_rules.yaml --license-key "${{ env.SG_KEY }}" --json
+      - name: Smoke — assess anonymous schedule fixture
+        shell: bash
+        run: |
+          # Run assessment on the large anonymous test schedule fixture (6000+ tasks)
+          # This validates the full assessment pipeline with realistic data
+          ./${{ matrix.bin }} assess internal/reader/testdata/test_anonymous_schedule.csv \
+            --status-date 2026-04-10 \
+            --license-key "${{ env.SG_KEY }}" \
+            --json-output "${{ runner.temp }}/anonymous_report.json" \
+            --csv "${{ runner.temp }}/anonymous_db.csv"
+          # Verify outputs were created
+          test -s "${{ runner.temp }}/anonymous_report.json"
+          test -s "${{ runner.temp }}/anonymous_db.csv"
+          # Verify JSON contains expected structure (no identifying references)
+          if grep -qi "ross" "${{ runner.temp }}/anonymous_report.json"; then
+            echo "::error::Anonymous report contains identifying reference 'Ross'"
+            exit 1
+          fi
+
+  # Desktop GUI: frontend type-check + production build, then a real CGO darwin
+  # build of the Wails app. Requires macOS for the Cocoa/cgo toolchain.
+  desktop:
+    name: Desktop (Wails GUI)
+    needs: test
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: desktop/go.mod
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/frontend/package-lock.json
+      - name: Install frontend deps
+        working-directory: desktop/frontend
+        run: npm ci
+      - name: Build frontend (tsc + vite)
+        working-directory: desktop/frontend
+        run: npm run build
+      - name: Vet
+        working-directory: desktop
+        run: go vet ./...
+      - name: Test
+        working-directory: desktop
+        run: go test ./...
+      - name: Build GUI (CGO darwin)
+        shell: bash
+        working-directory: desktop
+        run: mkdir -p bin && CGO_ENABLED=1 go build -trimpath -o bin/schedulegate-gui main.go
+
+  # Compile-only coverage for platform/arch combinations with no native runner
+  # (linux/arm64, darwin/amd64, windows/arm64).
+  cross-compile:
+    name: Cross-compile (${{ matrix.goos }}/${{ matrix.goarch }})
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+        exclude:
+          - goos: linux
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/schedulegate-${{ matrix.goos }}-${{ matrix.goarch }} main.go

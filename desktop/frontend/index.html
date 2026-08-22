@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScheduleGate</title>
+  <style>body{margin:0;background:#080c14;color:#e4e8f0;font-family:'Inter',sans-serif}</style>
+  <script type="module" src="/src/main.ts"></script>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">
+      <div class="logo-sq">SG</div>
+      <span>ScheduleGate</span>
+    </div>
+    <div class="logo-sub">DCMA 14-Point Assessment</div>
+  </header>
+  <div id="main-layout">
+    <div id="sidebar">
+      <div id="cmd-tabs">
+        <button class="cmd-tab active" data-cmd="assess">Assess</button>
+        <button class="cmd-tab" data-cmd="compare">Compare</button>
+        <button class="cmd-tab" data-cmd="validate">Validate</button>
+        <button class="cmd-tab" data-cmd="patterns">Patterns</button>
+      </div>
+      <div id="flags-panel"></div>
+      <div id="action-bar">
+        <button class="btn" id="btn-run">▶ RUN</button>
+        <button class="btn hidden" id="btn-stop">■ STOP</button>
+      </div>
+    </div>
+    <div id="right-panels">
+      <div id="terminal-section">
+        <div class="term-header">
+          <span>Terminal</span>
+          <button id="btn-clear">Clear</button>
+        </div>
+        <div id="terminal"></div>
+      </div>
+      <div id="results-section">
+        <div class="results-header">Results</div>
+        <div id="results-content">
+          <div style="text-align:center;color:#5a6678;padding:32px;font-size:13px">
+            Select a command and files, then click Run
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

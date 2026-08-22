@@ -1,0 +1,306 @@
+name: Release
+
+# Manual trigger only — invoked by /release-pipeline slash command
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g., v1.0.3). Leave empty for auto-increment.'
+        required: false
+        default: ''
+      force:
+        description: 'Force release (skip change detection)'
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: 'Dry run (build + test only, no publish)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  GOMODCACHE: /tmp/gomodcache
+
+jobs:
+  detect-changes:
+    name: Detect product changes
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      last_tag: ${{ steps.check.outputs.last_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for product-impacting changes
+        id: check
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "last_tag=${LAST_TAG:-v1.0.2}" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ inputs.force }}" == "true" ]]; then
+            echo "Forced release — skipping change detection"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "$LAST_TAG" ]]; then
+            echo "No tags found — first release"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED_FILES=$(git diff --name-only "$LAST_TAG" HEAD)
+          echo "Changed files since $LAST_TAG:"
+          echo "$CHANGED_FILES"
+
+          if echo "$CHANGED_FILES" | grep -qE "^(cmd|internal|desktop)/|main\.go|Makefile|\.github/workflows/"; then
+            echo "Product changes detected"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No product-impacting changes"
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    name: Test (${{ matrix.os }})
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should_release == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Vet
+        run: go vet ./...
+      - name: Test
+        run: go test ./...
+      - name: Coverage gate
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          go test ./... -coverprofile=/tmp/coverage.out >/dev/null
+          coverage=$(go tool cover -func=/tmp/coverage.out | tail -1 | awk '{print $NF}' | tr -d '%')
+          echo "Total coverage: ${coverage}%"
+          if (( $(echo "$coverage < 55" | bc -l) )); then
+            echo "::error::Coverage ${coverage}% is below the 55% minimum gate."
+            exit 1
+          fi
+
+  build-and-zip:
+    name: Build + package
+    needs: [detect-changes, test]
+    if: needs.detect-changes.outputs.should_release == 'true'
+    runs-on: macos-14
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      zip_name: ${{ steps.version.outputs.zip_name }}
+      release_notes: ${{ steps.notes.outputs.notes_file }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/frontend/package-lock.json
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION=$(bash scripts/release/version.sh)
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "zip_name=schedulegate-${VERSION}.zip" >> "$GITHUB_OUTPUT"
+          echo "Releasing: ${VERSION}"
+
+      - name: Build CLI binaries
+        run: |
+          mkdir -p release
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_BARE="${VERSION#v}"
+          COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo dev)
+          BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          VERSION_PKG="github.com/gjunqueira-sys/ScheduleGate/internal/version"
+          LDFLAGS="-s -w -X ${VERSION_PKG}.Version=${VERSION_BARE} -X ${VERSION_PKG}.Commit=${COMMIT} -X ${VERSION_PKG}.BuildDate=${BUILD_DATE}"
+
+          echo "Building macOS CLI..."
+          CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "$LDFLAGS" -o release/schedulegate main.go
+
+          echo "Building Windows CLI..."
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "$LDFLAGS" -o release/schedulegate.exe main.go
+
+          echo "Building Linux CLI..."
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "$LDFLAGS" -o release/schedulegate-linux main.go
+
+      - name: Build Desktop GUI
+        working-directory: desktop
+        run: |
+          cd frontend && npm ci && npm run build && cd ..
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_BARE="${VERSION#v}"
+          COMMIT=$(git -C .. rev-parse --short HEAD 2>/dev/null || echo dev)
+          BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          VERSION_PKG="github.com/gjunqueira-sys/ScheduleGate/internal/version"
+          LDFLAGS="-s -w -X ${VERSION_PKG}.Version=${VERSION_BARE} -X ${VERSION_PKG}.Commit=${COMMIT} -X ${VERSION_PKG}.BuildDate=${BUILD_DATE}"
+          CGO_ENABLED=1 go build -trimpath -ldflags "$LDFLAGS" -o ../release/schedulegate-gui main.go
+
+      - name: Verify binaries
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_BARE="${VERSION#v}"
+          EXPECTED="ScheduleGate v${VERSION_BARE}"
+
+          echo "Expected: ${EXPECTED}"
+          echo ""
+
+          ACTUAL=$(./release/schedulegate --version)
+          echo "macOS CLI: ${ACTUAL}"
+          echo "${ACTUAL}" | grep -q "${EXPECTED}" || { echo "::error::macOS CLI version mismatch!"; exit 1; }
+
+          if ./release/schedulegate-linux --version >/dev/null 2>&1; then
+            ACTUAL=$(./release/schedulegate-linux --version)
+            echo "Linux CLI: ${ACTUAL}"
+            echo "${ACTUAL}" | grep -q "${EXPECTED}" || { echo "::error::Linux CLI version mismatch!"; exit 1; }
+          fi
+
+          if ./release/schedulegate-gui --version >/dev/null 2>&1; then
+            ACTUAL=$(./release/schedulegate-gui --version)
+            echo "Desktop GUI: ${ACTUAL}"
+            echo "${ACTUAL}" | grep -q "${EXPECTED}" || { echo "::error::Desktop GUI version mismatch!"; exit 1; }
+          fi
+
+          echo "All binaries verified."
+
+      - name: Sync & verify user manual
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          go run ./cmd/manualcheck --update-version "${VERSION}"
+          go run ./cmd/manualcheck --expect-version "${VERSION}"
+
+      - name: Create zip package
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          bash scripts/release/zip-binaries.sh "${VERSION}"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          bash scripts/release/release-notes.sh "${VERSION}" > /tmp/release-notes.md
+          echo "notes_file=/tmp/release-notes.md" >> "$GITHUB_OUTPUT"
+          cat /tmp/release-notes.md
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-zip
+          path: schedulegate-${{ steps.version.outputs.version }}.zip
+          retention-days: 1
+
+  create-release:
+    name: Create GitHub Release
+    needs: [detect-changes, build-and-zip]
+    if: needs.detect-changes.outputs.should_release == 'true' && inputs.dry_run != true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download zip artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-zip
+
+      - name: Create tag and release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.build-and-zip.outputs.version }}"
+          NOTES_FILE="${{ needs.build-and-zip.outputs.release_notes }}"
+
+          git tag -a "${VERSION}" -m "Release ${VERSION}"
+          git push origin "${VERSION}"
+
+          gh release create "${VERSION}" \
+            --title "ScheduleGate ${VERSION}" \
+            --notes-file "${NOTES_FILE}" \
+            "schedulegate-${VERSION}.zip#ScheduleGate ${VERSION} (all platforms)"
+
+          echo "✓ Release created: ${VERSION}"
+
+  update-gumroad:
+    name: Update Gumroad product
+    needs: [detect-changes, build-and-zip, create-release]
+    if: needs.detect-changes.outputs.should_release == 'true' && inputs.dry_run != true
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download zip artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-zip
+
+      - name: Generate Gumroad description
+        run: |
+          VERSION="${{ needs.build-and-zip.outputs.version }}"
+          bash scripts/release/release-notes.sh "${VERSION}" > /tmp/gumroad-description.md
+
+      - name: Update Gumroad via browser automation
+        env:
+          GUMROAD_EMAIL: ${{ secrets.GUMROAD_EMAIL }}
+          GUMROAD_PASSWORD: ${{ secrets.GUMROAD_PASSWORD }}
+          GUMROAD_PRODUCT_URL: ${{ secrets.GUMROAD_PRODUCT_URL || 'https://junqueira5.gumroad.com/l/schedulegate' }}
+          RELEASE_VERSION: ${{ needs.build-and-zip.outputs.version }}
+        run: |
+          echo "Updating Gumroad product..."
+          echo "Version: ${RELEASE_VERSION}"
+          echo "Zip: schedulegate-${RELEASE_VERSION}.zip"
+
+          # Run the Go script for browser automation
+          cd scripts/release/gumroad
+          go run main.go \
+            --zip "../../schedulegate-${RELEASE_VERSION}.zip" \
+            --description "/tmp/gumroad-description.md" \
+            --version "${RELEASE_VERSION}"
+
+  dry-run-report:
+    name: Dry run report
+    needs: [detect-changes, build-and-zip]
+    if: needs.detect-changes.outputs.should_release == 'true' && inputs.dry_run == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report
+        run: |
+          echo "✓ Dry run complete!"
+          echo "Version: ${{ needs.build-and-zip.outputs.version }}"
+          echo "Zip: ${{ needs.build-and-zip.outputs.zip_name }}"
+          echo ""
+          echo "To complete the release, run again with dry_run=false"

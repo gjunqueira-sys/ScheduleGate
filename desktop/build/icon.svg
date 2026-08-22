@@ -1,0 +1,51 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f1a"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d9ff"/>
+      <stop offset="100%" style="stop-color:#0099ff"/>
+    </linearGradient>
+    <linearGradient id="gateGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ff88"/>
+      <stop offset="100%" style="stop-color:#00cc6a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="80" fill="url(#bgGradient)"/>
+  
+  <!-- Gate frame structure -->
+  <rect x="120" y="140" width="272" height="260" rx="12" fill="none" stroke="url(#accentGradient)" stroke-width="4" opacity="0.3"/>
+  
+  <!-- Gantt chart bars (schedule representation) -->
+  <rect x="160" y="180" width="192" height="24" rx="6" fill="url(#accentGradient)" opacity="0.8"/>
+  <rect x="160" y="220" width="144" height="24" rx="6" fill="url(#accentGradient)" opacity="0.6"/>
+  <rect x="160" y="260" width="168" height="24" rx="6" fill="url(#accentGradient)" opacity="0.7"/>
+  <rect x="160" y="300" width="120" height="24" rx="6" fill="url(#accentGradient)" opacity="0.5"/>
+  
+  <!-- Gate/Checkpoint indicator (shield shape) -->
+  <path d="M340 280 L380 280 L380 320 C380 340 360 360 340 360 C320 360 300 340 300 320 L300 280 Z" 
+        fill="url(#gateGradient)" filter="url(#glow)"/>
+  
+  <!-- Checkmark inside gate -->
+  <path d="M320 320 L340 340 L365 310" 
+        stroke="#0f0f1a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- SG monogram (subtle background) -->
+  <text x="256" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="120" font-weight="900" 
+        fill="url(#accentGradient)" opacity="0.15" text-anchor="middle">SG</text>
+  
+  <!-- Border accent -->
+  <rect x="116" y="136" width="280" height="268" rx="16" fill="none" stroke="url(#accentGradient)" stroke-width="2" opacity="0.5"/>
+</svg>

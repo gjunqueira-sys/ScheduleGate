@@ -1,0 +1,30 @@
+ID,Task Name,Duration,Start,Finish,Predecessors,% Complete,Total Slack,Active,Resource Names
+1,Project Summary,0,2026-01-05,2026-03-20,,100,0,Yes,
+2,Design Phase,25,2026-01-05,2026-02-06,,80,5,Yes,Alice
+3,Requirements Gathering,10,2026-01-05,2026-01-16,,100,0,Yes,Alice; Bob
+4,System Design,8,2026-01-19,2026-01-28,3,90,2,Yes,Alice
+5,Design Review,5,2026-01-29,2026-02-04,4,60,0,Yes,Alice; Bob; Charlie
+6,Design Sign-off,0,2026-02-05,2026-02-05,5,100,0,Yes,
+7,Build Phase,30,2026-02-09,2026-03-20,,40,0,Yes,
+8,Component A Build,15,2026-02-09,2026-02-27,6,50,3,Yes,Bob
+9,Component B Build,15,2026-02-09,2026-02-27,6,30,3,Yes,Charlie
+10,Integration,10,2026-03-02,2026-03-13,8FS+2d;9FS+2d,20,0,Yes,Alice; Bob
+11,Testing Phase,15,2026-03-16,2026-04-03,10,0,0,Yes,
+12,Unit Testing,5,2026-03-16,2026-03-20,10,0,2,Yes,
+13,Integration Testing,7,2026-03-23,2026-03-31,12,0,0,Yes,
+14,User Acceptance Testing,3,2026-04-01,2026-04-03,13,0,0,Yes,
+15,Deployment,5,2026-04-06,2026-04-10,14,0,0,Yes,
+16,Milestone - Design Complete,0,2026-02-05,2026-02-05,5,100,0,Yes,
+17,Milestone - Build Complete,0,2026-03-20,2026-03-20,10,100,0,Yes,
+18,Summary - Planning,0,2026-01-05,2026-02-06,,100,0,Yes,
+19,Task under Planning,5,2026-01-05,2026-01-09,18,100,0,Yes,David
+20,Inactive Task,5,2026-01-12,2026-01-16,,50,0,No,Eve
+21,Task No Resources Assigned,5,2026-02-09,2026-02-13,6,0,5,Yes,
+22,Task Single Resource,5,2026-02-16,2026-02-20,21,0,5,Yes,Frank
+23,Task Multiple Resources,5,2026-02-23,2026-02-27,22,0,5,Yes,Frank; Grace; Henry
+24,Task Completed No Resources,5,2026-03-02,2026-03-06,23,100,0,Yes,
+25,Task Incomplete No Resources,5,2026-03-09,2026-03-13,24,25,0,Yes,
+26,Task Incomplete With Resources,5,2026-03-16,2026-03-20,25,50,0,Yes,Irene
+27,Milestone No Resources,0,2026-03-23,2026-03-23,26,100,0,Yes,
+28,Summary No Resources,0,2026-03-24,2026-03-27,,0,0,Yes,
+29,Task Under Summary No Resources,3,2026-03-24,2026-03-26,28,0,0,Yes,

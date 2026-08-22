@@ -1,0 +1,7 @@
+bin/
+.git/
+.github/
+desktop/
+docs/
+*.md
+.gitignore

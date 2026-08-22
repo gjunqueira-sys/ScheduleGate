@@ -1,0 +1,36 @@
+rules:
+  - name: "Mechanical Order Entry Tasks"
+    match:
+      name: "*Order Entry*"
+      discipline: "05 - Mechanical Engineering"
+    min_count: 1
+
+  - name: "Control Order Entry Tasks"
+    match:
+      name: "*Order Entry*"
+      discipline: "06 - Controls Engineering"
+    min_count: 1
+
+  - name: "Mechanical Drawings to Install"
+    match:
+      name: "*Drawings to Install*"
+      discipline: "05 - Mechanical Engineering"
+    min_count: 1
+
+  - name: "Control Drawings to Install"
+    match:
+      name: "*Drawings to Install*"
+      discipline: "06 - Controls Engineering"
+    min_count: 1
+
+  - name: "Mechanical Tech Reviews"
+    match:
+      name: "*Tech Review*"
+      discipline: "05 - Mechanical Engineering"
+    min_count: 1
+
+  - name: "Control Tech Reviews"
+    match:
+      name: "*Tech Review*"
+      discipline: "06 - Controls Engineering"
+    min_count: 1

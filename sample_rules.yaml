@@ -1,0 +1,20 @@
+# Sample rules file for check-patterns command
+# Note: All pattern matching is case-insensitive
+rules:
+  - name: "Mechanical tasks exist"
+    match:
+      name: "*mechanical*"
+    min_count: 1
+
+  - name: "Commissioning milestones"
+    match:
+      name: "*commission*"
+    min_count: 1
+
+  - name: "Long duration tasks (>30 days)"
+    match:
+      name: "*"
+    constraints:
+      min_duration: 30
+    min_count: 1
+    max_count: 50
