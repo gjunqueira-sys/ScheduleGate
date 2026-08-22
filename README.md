@@ -279,3 +279,7 @@ For a deep dive into how scores are calculated, see the [Comparison Manual](docs
 -   **Task Bloat**: Increase in duration between versions (>10% growth triggers penalty).
 -   **Task Churn**: Ratio of added/deleted tasks to total tasks.
 -   **Ghost Tasks**: Tasks that are "sliding" (Start date in past, 0% complete).
+
+---
+
+**Public release:** v1.0.0 — August 2026
