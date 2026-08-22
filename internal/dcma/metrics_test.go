@@ -539,7 +539,7 @@ func TestResources_Integration(t *testing.T) {
 	// - Threshold: ≥95%
 	// - Exceptions: tasks missing resources with TaskID + Name
 	// - N/A: when no Resource Names column exists in export
-	r := reader.NewScheduleReader("/Users/giljunqueira/Documents/Programming/Projects/Go/ScheduleGate/internal/reader/testdata/test_resources_schedule.csv")
+	r := reader.NewScheduleReader("../reader/testdata/test_resources_schedule.csv")
 	s, err := r.Read()
 	if err != nil {
 		t.Fatalf("Failed to load test fixture: %v", err)
