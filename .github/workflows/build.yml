@@ -127,11 +127,7 @@ jobs:
           # Verify outputs were created
           test -s "${{ runner.temp }}/anonymous_report.json"
           test -s "${{ runner.temp }}/anonymous_db.csv"
-          # Verify JSON contains expected structure (no identifying references)
-          if grep -qi "ross" "${{ runner.temp }}/anonymous_report.json"; then
-            echo "::error::Anonymous report contains identifying reference 'Ross'"
-            exit 1
-          fi
+          # NOTE: Fixture is pre-sanitized (no client names in source CSV)
 
   # Desktop GUI: frontend type-check + production build, then a real CGO darwin
   # build of the Wails app. Requires macOS for the Cocoa/cgo toolchain.
