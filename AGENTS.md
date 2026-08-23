@@ -141,6 +141,7 @@ type Metric interface {
 - **Python scripts** in root (`_audit_random.py`, `_check_cols.py`, etc.) are audit/verification tools, not part of the Go build. They depend on `.venv/`.
 - **Desktop is a separate module** — `desktop/go.mod` uses `replace github.com/gjunqueira-sys/ScheduleGate => ../`. Run `go test` from `desktop/` to test it; root `go test ./...` does not cover it.
 - **License feature gating** — `compare`, `check-patterns`, `--json`, `--json-output`, `--csv`, `--exceptions-report` require a valid license key (Pro tier or above). CI smoke tests mint ephemeral keys via `license generate --key-only`.
+- **⚠️ SECURITY: Never build locally with the production `LICENSE_SECRET`** — a binary with the prod secret can generate valid Pro licenses. Use `make build` (empty secret) for dev. The Makefile will warn if you try. Rotate script: `scripts/release/rotate-secret.sh`.
 
 ## Commit & Push Workflow
 

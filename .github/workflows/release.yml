@@ -143,7 +143,8 @@ jobs:
           COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo dev)
           BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           VERSION_PKG="github.com/gjunqueira-sys/ScheduleGate/internal/version"
-          LDFLAGS="-s -w -X ${VERSION_PKG}.Version=${VERSION_BARE} -X ${VERSION_PKG}.Commit=${COMMIT} -X ${VERSION_PKG}.BuildDate=${BUILD_DATE}"
+          LICENSE_PKG="github.com/gjunqueira-sys/ScheduleGate/internal/license"
+          LDFLAGS="-s -w -X ${VERSION_PKG}.Version=${VERSION_BARE} -X ${VERSION_PKG}.Commit=${COMMIT} -X ${VERSION_PKG}.BuildDate=${BUILD_DATE} -X ${LICENSE_PKG}.SecretKey=${{ secrets.LICENSE_SECRET }}"
 
           echo "Building macOS CLI..."
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "$LDFLAGS" -o release/schedulegate main.go
@@ -163,7 +164,8 @@ jobs:
           COMMIT=$(git -C .. rev-parse --short HEAD 2>/dev/null || echo dev)
           BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           VERSION_PKG="github.com/gjunqueira-sys/ScheduleGate/internal/version"
-          LDFLAGS="-s -w -X ${VERSION_PKG}.Version=${VERSION_BARE} -X ${VERSION_PKG}.Commit=${COMMIT} -X ${VERSION_PKG}.BuildDate=${BUILD_DATE}"
+          LICENSE_PKG="github.com/gjunqueira-sys/ScheduleGate/internal/license"
+          LDFLAGS="-s -w -X ${VERSION_PKG}.Version=${VERSION_BARE} -X ${VERSION_PKG}.Commit=${COMMIT} -X ${VERSION_PKG}.BuildDate=${BUILD_DATE} -X ${LICENSE_PKG}.SecretKey=${{ secrets.LICENSE_SECRET }}"
           CGO_ENABLED=1 go build -trimpath -ldflags "$LDFLAGS" -o ../release/schedulegate-gui main.go
 
       - name: Verify binaries

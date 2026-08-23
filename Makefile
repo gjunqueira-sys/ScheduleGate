@@ -15,6 +15,18 @@ LICENSE_PKG := github.com/gjunqueira-sys/ScheduleGate/internal/license
 # Leave empty for dev builds (runs as free Community tier).
 LICENSE_SECRET ?=
 
+# Safeguard: warn if a secret is provided in a local (non-CI) build.
+# The production secret should only be injected via GitHub Actions or the
+# release pipeline. Local builds with the prod secret can generate valid
+# Pro licenses, defeating the licensing model.
+ifneq ($(LICENSE_SECRET),)
+  ifeq ($(CI),)
+    $(warning ⚠️  LICENSE_SECRET is set in a local build. This binary can generate valid Pro licenses.)
+    $(warning    Only use this for testing with a non-production secret.)
+    $(warning    The prod secret should only be injected via GitHub Actions or release pipeline.)
+  endif
+endif
+
 LDFLAGS=-ldflags "-s -w \
 	-X $(VERSION_PKG).Version=$(VERSION) \
 	-X $(VERSION_PKG).Commit=$(COMMIT) \
