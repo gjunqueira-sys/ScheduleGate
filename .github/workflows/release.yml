@@ -19,9 +19,6 @@ on:
         type: boolean
         default: false
 
-env:
-  GOMODCACHE: /tmp/gomodcache
-
 jobs:
   detect-changes:
     name: Detect product changes
