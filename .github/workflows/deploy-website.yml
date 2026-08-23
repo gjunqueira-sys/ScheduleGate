@@ -1,0 +1,39 @@
+name: Deploy Website
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'web/**'
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        working-directory: web
+        run: vercel pull --yes --token=${{ env.VERCEL_TOKEN }}
+
+      - name: Build website
+        working-directory: web
+        run: vercel build --token=${{ env.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel production
+        working-directory: web
+        run: vercel deploy --prod --token=${{ env.VERCEL_TOKEN }}
+      
+      - name: Report success
+        run: echo "✓ Website deployed to https://www.schedulegate.dev"
