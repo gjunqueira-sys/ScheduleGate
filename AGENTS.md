@@ -141,3 +141,25 @@ type Metric interface {
 - **Python scripts** in root (`_audit_random.py`, `_check_cols.py`, etc.) are audit/verification tools, not part of the Go build. They depend on `.venv/`.
 - **Desktop is a separate module** — `desktop/go.mod` uses `replace github.com/gjunqueira-sys/ScheduleGate => ../`. Run `go test` from `desktop/` to test it; root `go test ./...` does not cover it.
 - **License feature gating** — `compare`, `check-patterns`, `--json`, `--json-output`, `--csv`, `--exceptions-report` require a valid license key (Pro tier or above). CI smoke tests mint ephemeral keys via `license generate --key-only`.
+
+## Commit & Push Workflow
+
+**When asked to commit and push to the public directory:**
+
+1. **Scan for sensitive material** before committing:
+   - API keys, secrets, tokens, passwords
+   - License keys or signing secrets (especially `LICENSE_SECRET`, `GUMROAD_*`)
+   - Personal information (emails, phone numbers, addresses)
+   - Credentials in config files (`.env`, `*.yaml`, `*.json`)
+   - Hardcoded URLs that may be internal/private
+
+2. **Flag items for user review** if found:
+   - List each sensitive file/line with explanation
+   - Ask user to confirm before proceeding
+   - Suggest `.gitignore` additions if appropriate
+
+3. **Check `.gitignore` coverage**:
+   - Verify sensitive patterns are covered
+   - Ensure test fixtures using `!` overrides don't leak secrets
+
+4. **Wait for explicit confirmation** before committing flagged items

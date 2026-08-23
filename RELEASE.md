@@ -111,7 +111,8 @@ schedulegate-v1.0.3.zip
 ├── schedulegate-linux     # Linux CLI
 ├── schedulegate-gui       # macOS Desktop GUI
 ├── README.txt             # Installation guide
-└── LICENSE                # MIT License
+├── LICENSE                # AGPLv3 License (dual-licensed: see LICENSE-COMMERCIAL)
+└── LICENSE-COMMERCIAL     # Commercial License terms
 ```
 
 ### 6. GitHub Release
