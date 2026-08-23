@@ -291,6 +291,44 @@ jobs:
             --description "/tmp/gumroad-description.md" \
             --version "${RELEASE_VERSION}"
 
+  deploy-website:
+    name: Deploy website to Vercel
+    needs: [detect-changes, build-and-zip, create-release]
+    if: needs.detect-changes.outputs.should_release == 'true' && inputs.dry_run != true
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Update changelog in website
+        run: |
+          VERSION="${{ needs.build-and-zip.outputs.version }}"
+          bash scripts/release/release-notes.sh "${VERSION}" > /tmp/release-notes.md
+          
+          # Extract changelog entries from release notes
+          CHANGELOG=$(cat /tmp/release-notes.md)
+          echo "Changelog for ${VERSION}:"
+          echo "${CHANGELOG}"
+
+      - name: Pull Vercel environment
+        working-directory: web
+        run: vercel pull --yes --token=${{ env.VERCEL_TOKEN }}
+
+      - name: Build website
+        working-directory: web
+        run: vercel build --token=${{ env.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel production
+        working-directory: web
+        run: vercel deploy --prod --token=${{ env.VERCEL_TOKEN }}
+
   dry-run-report:
     name: Dry run report
     needs: [detect-changes, build-and-zip]
