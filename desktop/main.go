@@ -2,9 +2,11 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"os"
 
 	"github.com/gjunqueira-sys/ScheduleGate/desktop/services"
+	"github.com/gjunqueira-sys/ScheduleGate/internal/version"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -12,6 +14,11 @@ import (
 var assets embed.FS
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "--version" {
+		printVersion()
+		return
+	}
+
 	icon, _ := os.ReadFile("build/appicon.png")
 
 	app := application.New(application.Options{
@@ -49,4 +56,8 @@ func main() {
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
+}
+
+func printVersion() {
+	fmt.Println(version.Long())
 }
