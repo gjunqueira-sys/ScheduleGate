@@ -1,12 +1,12 @@
 package license
 
 import (
+	"bytes"
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"net/smtp"
 	"os"
 	"strings"
 	"time"
@@ -153,22 +153,59 @@ func (o *ServerOptions) handleGumroadWebhook(w http.ResponseWriter, r *http.Requ
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
 	}
-	o.maybeEmailKey(email, resp)
+	go o.maybeEmailKey(email, resp)
 	writeJSON(w, http.StatusOK, resp)
 }
 
 func (o *ServerOptions) maybeEmailKey(to string, resp MintResponse) {
-	if o.SMTPHost == "" || o.SMTPPort == "" || o.SMTPFrom == "" {
+	apiKey := o.SMTPPass
+	if apiKey == "" {
+		log.Printf("license server: NOT emailing key to %s — no API key configured (set SG_SMTP_PASS with Resend API key)", to)
 		return
 	}
-	auth := smtp.PlainAuth("", o.SMTPUser, o.SMTPPass, o.SMTPHost)
-	addr := fmt.Sprintf("%s:%s", o.SMTPHost, o.SMTPPort)
+	from := o.SMTPFrom
+	if from == "" {
+		log.Printf("license server: NOT emailing key to %s — no from address configured (set SG_SMTP_FROM)", to)
+		return
+	}
 	subject := "Your ScheduleGate Pro license key"
 	body := fmt.Sprintf("Thanks for buying ScheduleGate Pro.\n\nLicense key: %s\nTier: %s\nExpires: %s\n\nInstall with: schedulegate license set %s\n",
 		resp.LicenseKey, resp.Tier, resp.Expiry, resp.LicenseKey)
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s", o.SMTPFrom, to, subject, body)
-	if err := smtp.SendMail(addr, auth, o.SMTPFrom, []string{to}, []byte(msg)); err != nil {
+
+	payload := map[string]any{
+		"from":    from,
+		"to":      []string{to},
+		"subject": subject,
+		"text":    body,
+	}
+	bodyBytes, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("license server: failed to marshal email payload for %s: %v", to, err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewReader(bodyBytes))
+	if err != nil {
+		log.Printf("license server: failed to create email request for %s: %v", to, err)
+		return
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	res, err := client.Do(req)
+	if err != nil {
 		log.Printf("license server: failed to email key to %s: %v", to, err)
+		return
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode >= 200 && res.StatusCode < 300 {
+		log.Printf("license server: emailed license key to %s", to)
+	} else {
+		var errBody bytes.Buffer
+		errBody.ReadFrom(res.Body)
+		log.Printf("license server: failed to email key to %s: Resend returned %d: %s", to, res.StatusCode, errBody.String())
 	}
 }
 

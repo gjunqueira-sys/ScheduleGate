@@ -132,6 +132,85 @@ type Metric interface {
 }
 ```
 
+## License Server Deployment
+
+The license minting server (`cmd/license-server`) is deployed on **Railway** and uses **Resend HTTP API** for email delivery (not SMTP — Railway blocks outbound SMTP).
+
+### Railway Service
+
+| Detail | Value |
+|---|---|
+| **Project** | `schedulegate-license-server` |
+| **Service** | `schedulegate-license-server` |
+| **Public URL** | `https://schedulegate-license-server-production.up.railway.app` |
+| **Private domain** | `schedulegate-license-server.railway.internal` |
+| **Status** | Online (production environment) |
+
+### Deploy command
+
+```bash
+make build-license-server     # → bin/license-server
+railway service schedulegate-license-server
+railway up                    # deploys from repo root via Dockerfile
+```
+
+### Environment Variables (set on Railway)
+
+| Variable | Purpose |
+|---|---|
+| `SG_SECRET` | HMAC signing secret — MUST match CLI `LICENSE_SECRET` ldflag |
+| `SG_ADMIN_TOKEN` | Bearer token for `POST /api/v1/mint` |
+| `SG_WEBHOOK_TOKEN` | Token for Gumroad webhook `?token=` query param |
+| `SG_SMTP_PASS` | Resend API key (uses Resend HTTP API, not SMTP) |
+| `SG_SMTP_FROM` | From address: `noreply@schedulegate.dev` |
+
+Note: `SG_SMTP_HOST`, `SG_SMTP_PORT`, `SG_SMTP_USER` are **no longer needed** — email is sent via Resend's HTTP API (`POST https://api.resend.com/emails`) to bypass Railway's SMTP block.
+
+### Gumroad Ping (Webhook) Integration
+
+Gumroad calls webhooks "**Ping**". Configuration path: *Settings → Advanced → Ping endpoint*.
+
+**Ping URL**: `https://schedulegate-license-server-production.up.railway.app/api/v1/webhooks/gumroad?token=<SG_WEBHOOK_TOKEN>`
+
+Key facts:
+- Gumroad cannot send custom headers → auth is via `?token=` query param (constant-time compared)
+- Gumroad sends form-urlencoded POST with `email` field for buyer's email
+- Webhook response body is **not surfaced to the buyer** → email via Resend is the delivery mechanism
+- The `POST /api/v1/mint` admin endpoint does **not** email — only webhook endpoint triggers email
+
+### Testing Webhook End-to-End
+
+```bash
+# Test webhook (simulates Gumroad sale) — mints key AND emails it
+curl -X POST "https://schedulegate-license-server-production.up.railway.app/api/v1/webhooks/gumroad?token=<SG_WEBHOOK_TOKEN>" \
+  -d "email=test@example.com&sale_id=12345"
+
+# Test admin mint (no email sent)
+curl -X POST "https://schedulegate-license-server-production.up.railway.app/api/v1/mint" \
+  -H "Authorization: Bearer <SG_ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"buyer@example.com","tier":"pro"}'
+
+# Check server health
+curl https://schedulegate-license-server-production.up.railway.app/health
+
+# Check recent logs
+railway logs -n 20
+```
+
+### Email Provider
+
+Resend is the configured email provider. The SMTP credentials work for both SMTP and the HTTP API:
+- **SMTP** (blocked by Railway): `smtp.resend.com:587`
+- **HTTP API** (used): `POST https://api.resend.com/emails` with `Authorization: Bearer <SG_SMTP_PASS>`
+- Domain: `schedulegate.dev` (verified on Resend)
+
+### Purchaser Email
+
+The owner's test purchase email is set as a known buyer. Minted keys for this email include:
+- Pro tier (1-year): via webhook path
+- Lifetime tier (via admin mint endpoint, no email)
+
 ## Gotchas
 
 - **`.gitignore` blocks all `*.csv`, `*.xlsx`, `*.xls`, `*.html`** — test fixture files and sample rules must use `!` overrides or go in non-ignored paths. Currently only `internal/reader/testdata/*.csv` and `internal/reader/testdata/*.xlsx` have overrides.
