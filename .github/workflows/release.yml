@@ -240,6 +240,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+
           VERSION="${{ needs.build-and-zip.outputs.version }}"
           NOTES_FILE="${{ needs.build-and-zip.outputs.release_notes }}"
 
