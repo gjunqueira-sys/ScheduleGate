@@ -244,14 +244,15 @@ jobs:
           git config user.name "GitHub Actions"
 
           VERSION="${{ needs.build-and-zip.outputs.version }}"
-          NOTES_FILE="${{ needs.build-and-zip.outputs.release_notes }}"
 
-          git tag -a "${VERSION}" -m "Release ${VERSION}"
-          git push origin "${VERSION}"
+          git tag -f -a "${VERSION}" -m "Release ${VERSION}"
+          git push -f origin "${VERSION}"
+
+          bash scripts/release/release-notes.sh "${VERSION}" > /tmp/release-notes.md
 
           gh release create "${VERSION}" \
             --title "ScheduleGate ${VERSION}" \
-            --notes-file "${NOTES_FILE}" \
+            --notes-file /tmp/release-notes.md \
             "schedulegate-${VERSION}.zip#ScheduleGate ${VERSION} (all platforms)"
 
           echo "✓ Release created: ${VERSION}"
