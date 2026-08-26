@@ -225,24 +225,32 @@ The owner's test purchase email is set as a known buyer. Minted keys for this em
 - **License feature gating** — `compare`, `check-patterns`, `--json`, `--json-output`, `--csv`, `--exceptions-report` require a valid license key (Pro tier or above). CI smoke tests mint ephemeral keys via `license generate --key-only`.
 - **⚠️ SECURITY: Never build locally with the production `LICENSE_SECRET`** — a binary with the prod secret can generate valid Pro licenses. Use `make build` (empty secret) for dev. The Makefile will warn if you try. Rotate script: `scripts/release/rotate-secret.sh`.
 
+## Public repo — never commit secrets
+
+This GitHub repository is **public**. Anything committed is world-readable, including git history after a later delete. Treat every file as customer-facing: source, docs, slash commands (`.opencode/` is tracked), workflows, HTML, YAML, JSON, scripts.
+
+**Never write any of the following into a file, commit, or command example:**
+
+- Passwords (Gumroad, Google, email, hosting, anything)
+- API keys, tokens, signing secrets (`LICENSE_SECRET`, `SG_SECRET`, `SG_ADMIN_TOKEN`, `SG_WEBHOOK_TOKEN`, `SG_SMTP_PASS`, `VERCEL_TOKEN`, GitHub PATs)
+- License keys (`SG-…` production keys)
+- `.env` contents, cookie files, browser profiles, Playwright storage state
+- Personal data: private emails, phone numbers, addresses, financial details
+
+**Allowed:** env-var *names* (`GUMROAD_EMAIL`), placeholders (`<SG_WEBHOOK_TOKEN>`), and public URLs (`https://junqueira5.gumroad.com/l/schedulegate`).
+
+**Rules for agents:**
+
+- Credentials live in the environment or GitHub Actions secrets only. Never hardcode. Never use a “stored fallback” password or email in a slash command, script, or doc.
+- Gumroad login is Google SSO. Do not store a Gumroad or Google password. Do not put email/password into `.opencode/commands/`.
+- Do not echo secrets into chat, logs, release notes, or `/tmp` instruction files.
+- If a secret is discovered in the tree or in history: **stop**, do not commit, tell the user the file/line, and tell them to rotate the credential. Removing it from HEAD is not enough — history still has it.
+
 ## Commit & Push Workflow
 
-**When asked to commit and push to the public directory:**
+**When asked to commit and push:**
 
-1. **Scan for sensitive material** before committing:
-   - API keys, secrets, tokens, passwords
-   - License keys or signing secrets (especially `LICENSE_SECRET`, `GUMROAD_*`)
-   - Personal information (emails, phone numbers, addresses)
-   - Credentials in config files (`.env`, `*.yaml`, `*.json`)
-   - Hardcoded URLs that may be internal/private
-
-2. **Flag items for user review** if found:
-   - List each sensitive file/line with explanation
-   - Ask user to confirm before proceeding
-   - Suggest `.gitignore` additions if appropriate
-
-3. **Check `.gitignore` coverage**:
-   - Verify sensitive patterns are covered
-   - Ensure test fixtures using `!` overrides don't leak secrets
-
-4. **Wait for explicit confirmation** before committing flagged items
+1. **Scan the diff and staged files** for the items above (including `.opencode/`, `docs/`, `web/`, workflows, and “example” values that look like real secrets).
+2. **If anything matches: refuse to commit.** List file:line, explain, ask the user what to do. Suggest `.gitignore` if a secrets file was added.
+3. **Check `.gitignore`**: `.env`, credential files, and Playwright profiles must stay untracked. `!` overrides on fixtures must not leak secrets.
+4. Commit only after the scan is clean. The user saying “commit and push” does **not** override a secrets finding.

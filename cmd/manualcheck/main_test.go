@@ -27,7 +27,7 @@ func buildMinimalFixture() string {
 		sb.WriteString("schedulegate " + useName)
 
 		c.Flags().VisitAll(func(f *pflag.Flag) {
-			if f.Name == "help" || f.Name == "toggle" {
+			if f.Name == "help" {
 				return
 			}
 			sb.WriteString("--" + f.Name + " ")
@@ -43,7 +43,7 @@ func buildMinimalFixture() string {
 	}
 
 	root.PersistentFlags().VisitAll(func(f *pflag.Flag) {
-		if f.Name == "help" || f.Name == "toggle" {
+		if f.Name == "help" {
 			return
 		}
 		sb.WriteString("--" + f.Name + " ")

@@ -35,6 +35,20 @@ vendor/
 # Local test data
 Local_Tests_Manual/
 
+# Local notes — never commit
+Local_Files_do_not_track_do_not_commit/
+
+# Secrets and credentials
+.env
+.env.*
+*.pem
+
+# Playwright auth / storage state (session cookies)
+storageState.json
+*storage-state.json
+*storage-state*.json
+playwright/.auth/
+
 # Tool artifacts
 .playwright-mcp/
 

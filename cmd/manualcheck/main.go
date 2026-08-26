@@ -54,7 +54,7 @@ func Check(manualHTML, expectVersion string) ([]string, Stats) {
 	htmlLower := strings.ToLower(manualHTML)
 
 	root := cmdroot.RootCmd()
-	skipFlags := map[string]bool{"help": true, "toggle": true}
+	skipFlags := map[string]bool{"help": true}
 
 	var collectCommands func(c *cobra.Command, path string)
 	collectCommands = func(c *cobra.Command, path string) {
