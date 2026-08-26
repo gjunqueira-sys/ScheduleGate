@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -42,25 +40,25 @@ func main() {
 	}
 
 	manifest := Manifest{
-		Version:              args.version,
-		ZipPath:              args.zipPath,
-		Description:          string(description),
-		DescriptionPath:      args.descriptionPath,
-		GumroadLoginURL:      "https://gumroad.com/login",
-		GumroadEmail:         creds.email,
-		GumroadPasswordHint:  "use GUMROAD_PASSWORD env var",
-		ProductURL:           creds.productURL,
-		InstructionsPath:     fmt.Sprintf("/tmp/gumroad-instructions-%s.txt", time.Now().Format("20060102-150405")),
+		Version:             args.version,
+		ZipPath:             args.zipPath,
+		Description:         string(description),
+		DescriptionPath:     args.descriptionPath,
+		GumroadLoginURL:     "https://gumroad.com/login",
+		GumroadEmail:        creds.email,
+		GumroadPasswordHint: "use GUMROAD_PASSWORD env var",
+		ProductURL:          creds.productURL,
+		InstructionsPath:    fmt.Sprintf("/tmp/gumroad-instructions-%s.txt", time.Now().Format("20060102-150405")),
 		Steps: []Step{
 			{Number: 1, Action: "navigate", Target: "https://gumroad.com/login", Description: "Navigate to Gumroad login page"},
-			{Number: 2, Action: "login", Target: "login form", Description: "Enter credentials and login"},
-			{Number: 3, Action: "navigate", Target: creds.productURL, Description: "Navigate to product edit page"},
-			{Number: 4, Action: "click", Target: "Upload files button", Description: "Click upload/add file button"},
-			{Number: 5, Action: "upload", Target: args.zipPath, Description: "Upload the release zip file"},
-			{Number: 6, Action: "wait", Target: "upload progress bar", Description: "Wait for upload to complete"},
-			{Number: 7, Action: "replace_text", Target: "product description editor", Description: "Replace entire product description"},
-			{Number: 8, Action: "click", Target: "Save/Publish button", Description: "Click Save or Publish changes"},
-			{Number: 9, Action: "verify", Target: "product page", Description: "Verify version and file are updated"},
+			{Number: 2, Action: "login", Target: "login form", Description: "Enter credentials from GUMROAD_EMAIL / GUMROAD_PASSWORD"},
+			{Number: 3, Action: "navigate", Target: creds.productURL, Description: "Navigate to product page and open Edit product"},
+			{Number: 4, Action: "delete", Target: "existing file Actions menu", Description: "Delete the previously attached zip if present"},
+			{Number: 5, Action: "upload", Target: args.zipPath, Description: "Upload the GitHub Release zip via Computer files"},
+			{Number: 6, Action: "save", Target: "Save changes", Description: "Save immediately after upload — before editing description"},
+			{Number: 7, Action: "replace_text", Target: "product description editor", Description: "Replace description with templated release notes"},
+			{Number: 8, Action: "save", Target: "Save changes", Description: "Save description update"},
+			{Number: 9, Action: "verify", Target: "product page", Description: "Verify file name, size, and version in description"},
 		},
 	}
 
@@ -135,7 +133,8 @@ func parseArgs() Args {
 		args.descriptionPath = "/tmp/gumroad-description.md"
 	}
 	if args.version == "" {
-		args.version = "v1.0.3"
+		fmt.Fprintf(os.Stderr, "Error: --version is required (e.g. --version v1.0.5)\n")
+		os.Exit(1)
 	}
 
 	return args
@@ -152,24 +151,8 @@ func getCredentials() (Credentials, error) {
 		creds.productURL = "https://junqueira5.gumroad.com/l/schedulegate"
 	}
 
-	reader := bufio.NewReader(os.Stdin)
-
-	if creds.email == "" {
-		fmt.Print("Gumroad Email: ")
-		email, err := reader.ReadString('\n')
-		if err != nil {
-			return creds, err
-		}
-		creds.email = strings.TrimSpace(email)
-	}
-
-	if creds.password == "" {
-		fmt.Print("Gumroad Password: ")
-		password, err := reader.ReadString('\n')
-		if err != nil {
-			return creds, err
-		}
-		creds.password = strings.TrimSpace(password)
+	if creds.email == "" || creds.password == "" {
+		return creds, fmt.Errorf("GUMROAD_EMAIL and GUMROAD_PASSWORD must be set (do not hardcode credentials)")
 	}
 
 	return creds, nil

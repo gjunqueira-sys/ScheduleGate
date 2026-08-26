@@ -27,26 +27,27 @@ Local tests all run in CI; the binary smoke suite additionally exercises the bui
 
 ### Release Pipeline (`.github/workflows/release.yml`)
 
-Automated release pipeline invoked via `/release-pipeline` slash command. Builds 4 binaries (CLI x3 + Desktop GUI), packages into zip, creates GitHub Release, and updates Gumroad product via browser automation.
+Invoked via `/release-pipeline`. Local command syncs every version-bearing file, commits, and triggers CI. CI builds signed binaries, tags, and publishes the GitHub Release + website. Gumroad is updated **locally** via Playwright after CI succeeds (the workflow does not log into Gumroad).
 
 ```bash
 /release-pipeline                    # Auto-detect changes, auto-increment patch
 /release-pipeline --force            # Force release even without product changes
 /release-pipeline --version 1.1.0    # Manual version override
-/release-pipeline --dry-run          # Build + test only, no publish
+/release-pipeline --dry-run          # CI build + test only, no publish
 ```
 
 **Release scripts** (in `scripts/release/`):
 - `version.sh` — Auto-increment semver patch from git tags
+- `sync-version.sh` / `cmd/versionsync` — Rewrite/check version strings across Makefile, README, website, manuals, desktop config, `version.go`
 - `release-notes.sh` — Generate changelog from commits since last tag
 - `zip-binaries.sh` — Package binaries + README + LICENSE into zip
-- `gumroad/main.go` — Gumroad browser automation helper
+- `gumroad/main.go` — Prints a Playwright step manifest (credentials from env vars only)
 
-**Gumroad credentials**: Set `GUMROAD_EMAIL`, `GUMROAD_PASSWORD`, `GUMROAD_PRODUCT_URL` as environment variables or GitHub Secrets. Script prompts if not set.
+**Gumroad credentials**: `GUMROAD_EMAIL`, `GUMROAD_PASSWORD`, optional `GUMROAD_PRODUCT_URL`. Never hardcode. Never commit.
 
 **Zip contents**: `schedulegate` (macOS), `schedulegate.exe` (Windows), `schedulegate-linux` (Linux), `schedulegate-gui` (Desktop GUI), `README.txt`, `LICENSE`, `user-manual.html`
 
-**Manual freshness gate**: `cmd/manualcheck` verifies `docs/user-manual.html` matches the CLI surface (commands, flags, DCMA metric thresholds). Runs in release pipeline before packaging; `go test ./cmd/manualcheck/...` enforces it in regular CI.
+**Version sync gate**: `cmd/versionsync --check` fails the release job unless every customer-facing file shows the release version. `cmd/manualcheck` verifies `docs/user-manual.html` matches the CLI surface (commands, flags, DCMA metric thresholds). Both run in `release.yml`; `go test ./cmd/manualcheck/... ./cmd/versionsync/...` covers them in regular CI.
 
 ## Desktop GUI (Wails v3)
 
@@ -109,6 +110,8 @@ CLI (cobra cmd/) → internal/reader (parse Excel/CSV) → model.Schedule
 | `cmd/` | Cobra commands (self-contained, each adds itself via `init()`) |
 | `cmd/genfixture/` | Test fixture generator used by CI smoke tests |
 | `cmd/license-server/` | Separate binary — license minting server (store webhook backend) |
+| `cmd/manualcheck/` | User-manual freshness gate (CLI surface vs `docs/user-manual.html`) |
+| `cmd/versionsync/` | Rewrite/check product version across Makefile, README, website, manuals, desktop config |
 | `internal/model/` | `Task` struct, `Schedule` struct — canonical types |
 | `internal/reader/` | Excel/CSV parsing, case-insensitive fuzzy column header matching |
 | `internal/dcma/` | `Metric` interface + 14 implementations; `DCMAAssessment` orchestrator |

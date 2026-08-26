@@ -1,252 +1,224 @@
 ---
-description: Automated release pipeline - build, test, package, and publish
+description: Automated release pipeline - sync versions, CI build, GitHub Release, Gumroad
 ---
 
 # /release-pipeline — Automated Release for ScheduleGate
 
-Trigger a full release pipeline for ScheduleGate. This command detects product-impacting changes, runs tests, builds all binaries, creates a GitHub Release, and updates the Gumroad product via browser automation.
+Ship a new ScheduleGate version to customers. This command:
+
+1. Syncs **every** customer-facing version string to the new rev
+2. Commits and pushes that sync to `main`
+3. Triggers GitHub Actions (`.github/workflows/release.yml`) to build signed binaries, tag, and create the GitHub Release
+4. After CI succeeds, updates the Gumroad product via Playwright browser automation
+
+**Never hardcode credentials.** Gumroad login comes from `GUMROAD_EMAIL` / `GUMROAD_PASSWORD` env vars (or ask the user). Do not write passwords into files, command docs, git, or chat logs.
 
 ## Usage
 
-```bash
+```
 /release-pipeline                    # Standard release (auto-detect, auto-increment patch)
 /release-pipeline --force            # Force release even without product changes
 /release-pipeline --version 1.1.0    # Manual version override
-/release-pipeline --dry-run          # Build + test only, no publish
+/release-pipeline --dry-run          # Trigger CI build+test only, no GitHub Release / Gumroad / website
 ```
 
-## What This Command Does
+## Split of responsibilities
 
-When you invoke `/release-pipeline`, execute the following pipeline:
+| Where | What |
+|-------|------|
+| **Local (this command)** | Change detection, version bump, `versionsync` across files, commit, push, trigger workflow, wait, Gumroad Playwright |
+| **GitHub Actions `release.yml`** | Tests, coverage gate, build 4 binaries with production `LICENSE_SECRET`, zip, GitHub Release + tag, Vercel website deploy |
+| **GitHub Actions `build.yml`** | Regular CI on every push/PR (not a release). Triggered automatically by the version-sync push. |
 
-### Step 1: Detect Product-Impacting Changes
+Local machines **must not** build release binaries — the Makefile refuses to embed the production `LICENSE_SECRET` outside CI.
 
-Check which files changed since the last git tag. If any files match product-impacting paths, continue. Otherwise, report "No product-impacting changes detected" and stop (unless `--force`).
+## Version-bearing files (must all match)
 
-**Product-impacting paths:**
-```
-cmd/
-internal/
-desktop/
-main.go
-Makefile
-.github/workflows/
-```
+`go run ./cmd/versionsync` is the single source of truth. It rewrites / checks:
 
-Run this detection:
+| File | Field |
+|------|--------|
+| `Makefile` | `VERSION ?= X.Y.Z` |
+| `README.md` | `**Public release:** vX.Y.Z — Month Year` |
+| `web/index.html` | download URL `schedulegate-vX.Y.Z.zip` |
+| `internal/version/version.go` | `var Version = "X.Y.Z"` (ldflags still override at build) |
+| `desktop/build/config.yml` | `info.version` only (not Wails `version: '3'`) |
+| `docs/user-manual.html` | version badges (≥2) |
+| `docs/assess-manual.html` | version badges (≥2) |
+
+`RELEASE.md` version history is append-only documentation — do not rewrite historical examples.
+
+## What to do when the user invokes `/release-pipeline`
+
+Parse args: `--force`, `--version X.Y.Z`, `--dry-run`. Then execute **in order**. Abort (non-zero) on the first failure.
+
+### Step 1 — Detect product-impacting changes
+
+Skip this step if `--force`.
+
 ```bash
-LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.2")
-CHANGED_FILES=$(git diff --name-only "$LAST_TAG" HEAD 2>/dev/null || git diff --name-only HEAD~5 HEAD)
-
-if echo "$CHANGED_FILES" | grep -qE "^(cmd|internal|desktop)/|main\.go|Makefile|\.github/workflows/"; then
-    echo "Product changes detected since $LAST_TAG"
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+if [[ -z "$LAST_TAG" ]]; then
+  echo "No tags found — treating as first release"
 else
+  CHANGED_FILES=$(git diff --name-only "$LAST_TAG" HEAD)
+  echo "Changed since $LAST_TAG:"
+  echo "$CHANGED_FILES"
+  if ! echo "$CHANGED_FILES" | grep -qE "^(cmd|internal|desktop)/|main\.go|Makefile|\.github/workflows/"; then
     echo "No product-impacting changes detected since $LAST_TAG"
     echo "Use --force to release anyway"
     exit 0
+  fi
 fi
 ```
 
-### Step 2: Auto-Increment Version
+Product-impacting paths: `cmd/`, `internal/`, `desktop/`, `main.go`, `Makefile`, `.github/workflows/`.
 
-Parse the last git tag, bump the patch version:
-```bash
-bash scripts/release/version.sh
-```
-
-Output example: `v1.0.3`
-
-If `--version` flag is provided, use that instead.
-
-### Step 3: Run Tests + Coverage Gate
+### Step 2 — Determine version
 
 ```bash
-go test ./...
-go test ./... -coverprofile=/tmp/coverage.out
-COVERAGE=$(go tool cover -func=/tmp/coverage.out | tail -1 | awk '{print $NF}' | tr -d '%')
-if (( $(echo "$COVERAGE < 55" | bc -l) )); then
-    echo "Coverage ${COVERAGE}% below 55% gate. Aborting."
-    exit 1
+if [[ -n "$MANUAL_VERSION" ]]; then
+  VERSION=$(bash scripts/release/version.sh --version "$MANUAL_VERSION")
+else
+  VERSION=$(bash scripts/release/version.sh)
 fi
+echo "Releasing $VERSION"
 ```
 
-### Step 4: Build All Binaries
+`VERSION` always has a `v` prefix (e.g. `v1.0.5`).
+
+### Step 3 — Sync every version-bearing file
 
 ```bash
-# Clean and create output directory
-rm -rf bin/ release/
-mkdir -p release/
-
-# macOS CLI (arm64)
-CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o release/schedulegate main.go
-
-# Windows CLI (amd64)
-CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o release/schedulegate.exe main.go
-
-# Linux CLI (amd64)
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o release/schedulegate-linux main.go
-
-# macOS Desktop GUI (arm64, CGO required for Wails)
-cd desktop && CGO_ENABLED=1 go build -trimpath -o ../release/schedulegate-gui main.go && cd ..
+go run ./cmd/versionsync --apply "$VERSION"
+go run ./cmd/versionsync --check "$VERSION"
+go run ./cmd/manualcheck --expect-version "$VERSION"
 ```
 
-### Step 5: Create Zip Package
+Show `git diff --stat` to the user.
+
+### Step 4 — Commit and push (skip file commit on `--dry-run`)
+
+If `--dry-run`: do **not** commit version-sync changes (leave them in the working tree or revert). Go to Step 5 with `dry_run=true`.
+
+Otherwise:
+
+1. If there are unrelated uncommitted changes, list them and **ask the user** before committing.
+2. Ask the user to confirm the release commit. When they agree:
 
 ```bash
-bash scripts/release/zip-binaries.sh "$VERSION"
+git add Makefile README.md web/index.html internal/version/version.go \
+  desktop/build/config.yml docs/user-manual.html docs/assess-manual.html
+git commit -m "chore: bump version to ${VERSION}"
+git push origin HEAD
 ```
 
-This creates `schedulegate-$VERSION.zip` containing:
-- `schedulegate` (macOS CLI)
-- `schedulegate.exe` (Windows CLI)
-- `schedulegate-linux` (Linux CLI)
-- `schedulegate-gui` (macOS Desktop GUI)
-- `README.txt` (installation instructions)
-- `LICENSE` (project license)
-- `user-manual.html` (complete reference guide)
+Do not commit secrets, zip artifacts, or `release/`.
 
-### Step 5b: Sync & Verify User Manual
+### Step 5 — Trigger GitHub Actions release workflow
+
+Repo: `gjunqueira-sys/ScheduleGate`. Workflow file: `release.yml`.
 
 ```bash
-go run ./cmd/manualcheck --update-version "${VERSION}"
-go run ./cmd/manualcheck --expect-version "${VERSION}"
+ARGS=(-f "version=${VERSION}")
+# if --force:  ARGS+=(-f force=true)
+# if --dry-run: ARGS+=(-f dry_run=true)
+
+gh workflow run release.yml --repo gjunqueira-sys/ScheduleGate "${ARGS[@]}"
+sleep 5
+RUN_ID=$(gh run list --repo gjunqueira-sys/ScheduleGate --workflow=release.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+echo "Workflow: https://github.com/gjunqueira-sys/ScheduleGate/actions/runs/${RUN_ID}"
+gh run watch "$RUN_ID" --repo gjunqueira-sys/ScheduleGate --exit-status
 ```
 
-This ensures the user manual is up to date with the current CLI surface (commands, flags, DCMA metric thresholds) and auto-bumps version badges to match the release version.
+`release.yml` will:
 
-### Step 6: Generate Release Notes
+1. Re-check product changes (unless `force`)
+2. Test on ubuntu / macos-14 / windows + 55% coverage gate
+3. **Fail** if `versionsync --check` disagrees (skipped on dry-run)
+4. Build macOS / Windows / Linux CLI + macOS GUI with production `LICENSE_SECRET` and `${VERSION}` ldflags
+5. Zip via `scripts/release/zip-binaries.sh`
+6. Create annotated tag + GitHub Release with `schedulegate-${VERSION}.zip`
+7. Deploy `web/` to Vercel production
+
+Regular `build.yml` also runs on the version-sync push — that is expected (smoke tests, not the release artifacts).
+
+If `gh run watch` exits non-zero, **stop**. Do not touch Gumroad.
+
+### Step 6 — Dry-run exit
+
+If `--dry-run`, print the run URL and stop. No GitHub Release, no Gumroad, no website publish.
+
+### Step 7 — Download the release zip
 
 ```bash
-bash scripts/release/release-notes.sh "$VERSION"
+gh release download "$VERSION" --repo gjunqueira-sys/ScheduleGate \
+  --pattern "schedulegate-${VERSION}.zip" --dir /tmp
+ZIP="/tmp/schedulegate-${VERSION}.zip"
+ls -lh "$ZIP"
 ```
 
-This generates release notes from git commits since last tag.
+Use this absolute path for the Gumroad upload. Do not upload a locally-built zip.
 
-### Step 7: Create GitHub Release + Tag
+### Step 8 — Update Gumroad via Playwright
+
+Credentials:
 
 ```bash
-git tag -a "$VERSION" -m "Release $VERSION"
-git push origin "$VERSION"
-
-gh release create "$VERSION" \
-    --title "ScheduleGate $VERSION" \
-    --notes-file /tmp/release-notes.md \
-    "schedulegate-$VERSION.zip#ScheduleGate $VERSION (all platforms)"
+: "${GUMROAD_EMAIL:?set GUMROAD_EMAIL}"
+: "${GUMROAD_PASSWORD:?set GUMROAD_PASSWORD}"
+PRODUCT_URL="${GUMROAD_PRODUCT_URL:-https://junqueira5.gumroad.com/l/schedulegate}"
 ```
 
-### Step 8: Update Gumroad via Browser Automation
+If env vars are missing, **ask the user** for them. Never echo the password. Never write it to a file.
 
-Use the Playwright browser tools to:
+Prepare description:
 
-1. **Set credentials** (use environment variables if set, otherwise use stored values)
-   ```bash
-   # Check if environment variables are set, if not use stored values
-   if [ -z "$GUMROAD_EMAIL" ]; then
-       export GUMROAD_EMAIL="giljunqueira@outlook.com"
-   fi
-   if [ -z "$GUMROAD_PASSWORD" ]; then
-       export GUMROAD_PASSWORD=":cRGh:JU6r4AxRS"
-   fi
-   ```
+```bash
+NOTES=$(bash scripts/release/release-notes.sh "$VERSION")
+# Read scripts/release/gumroad/description-template.md
+# Replace {VERSION} with $VERSION
+# Replace {CHANGES} with the "What's New" section of $NOTES
+```
 
-2. **Navigate to Gumroad login**
-   ```
-   URL: https://gumroad.com/login
-   ```
+Playwright steps (use browser tools; abort on any failure):
 
-3. **Login automatically**
-   - Email: `$GUMROAD_EMAIL` (giljunqueira@outlook.com)
-   - Password: `$GUMROAD_PASSWORD`
-   - Fill in the email and password fields
-   - Click the login button
+1. Navigate to `https://gumroad.com/login`
+2. Fill email (`GUMROAD_EMAIL`) and password (`GUMROAD_PASSWORD`), submit, wait for dashboard
+3. Navigate to `$PRODUCT_URL` and open **Edit product**
+4. **Content tab — replace the file**
+   - If a file is already attached: click the file's **Actions** button (`aria-label="Actions"`), click **Delete**, confirm
+   - Click **Upload files** → **Computer files**
+   - Upload `$ZIP` via the file chooser
+   - Wait until the file name `schedulegate-vX.Y.Z.zip` appears
+   - **CRITICAL: Click "Save changes" immediately after the upload completes and wait for "Changes saved!". Do NOT edit the description before this save — Gumroad drops the uploaded file if the editor changes first.**
+5. **Description**
+   - Read `scripts/release/gumroad/description-template.md`, substitute `{VERSION}` and `{CHANGES}`
+   - Set the contenteditable description (JS `innerHTML` + `input` event)
+6. Click **Save changes** again, wait for "Changes saved!"
+7. Skip customer notification if prompted
+8. Verify:
+   - File name shows `schedulegate-${VERSION}` (not the previous rev)
+   - File size is on the order of ~20 MB
+   - Description shows `$VERSION`
+9. Close the browser
 
-4. **Navigate to product edit page**
-   - Product URL: https://junqueira5.gumroad.com/l/schedulegate
-   - Click "Edit product" to access the edit page
+Optional helper (prints a JSON step manifest, does not drive the browser):
 
-5. **Update product file**
-   - Navigate to Content tab
-   - Delete existing file if present:
-     - Click "Actions" button (aria-label="Actions") next to the file
-     - Click "Delete" in the menu that appears
-     - Confirm deletion
-   - Upload new file:
-     - Click "Upload files" button in the toolbar
-     - Select "Computer files" from the menu
-     - Wait for file chooser dialog
-     - Upload `release/schedulegate-$VERSION.zip`
-     - Wait for upload to complete (file name should appear in content editor)
-   - Verify upload shows correct file name (schedulegate-vX.Y.Z) and size
-   - **CRITICAL: Click "Save changes" immediately after upload completes and verify "Changes saved!" appears. Do NOT update the description text before saving the file — Gumroad will drop the uploaded file if you modify the editor content before saving.**
+```bash
+GUMROAD_EMAIL=... GUMROAD_PASSWORD=... \
+  go run ./scripts/release/gumroad --zip "$ZIP" --version "$VERSION" \
+    --description scripts/release/gumroad/description-template.md
+```
 
-6. **Update product description**
-   - Read template from `scripts/release/gumroad/description-template.md`
-   - Replace `{VERSION}` with actual version number
-   - Replace `{CHANGES}` with new features/changes from release notes
-   - Use JavaScript to set the content editor HTML:
-     ```js
-     const editor = document.querySelector('[contenteditable="true"]');
-     editor.innerHTML = newContent;
-     editor.dispatchEvent(new Event('input', { bubbles: true }));
-     ```
-   - Verify description is updated in the preview
-
-7. **Save/Publish**
-   - Click "Save changes" again (after text update)
-   - Verify "Changes saved!" message appears
-   - Skip customer notification
-
-8. **Verify success**
-   - Check that file name shows "schedulegate-vX.Y.Z" (not the old version)
-   - Check that file size is reasonable (should be ~24 MB for v1.0.3)
-   - Verify description shows correct version number
-   - Take screenshot for verification (optional)
-   - Close browser
-
-If any step fails, exit non-zero immediately. The pipeline fails completely.
-
----
-
-## Slash Command Implementation
-
-When the user types `/release-pipeline`, you should:
-
-1. Parse arguments (`--force`, `--version X.Y.Z`, `--dry-run`)
-2. Commit any uncommitted changes first (ask the user)
-3. Push to `main` branch
-4. Trigger the GitHub Actions release workflow:
-   ```bash
-   gh workflow run release.yml --repo gjunqueira-sys/ScheduleGate -f version=$VERSION
-   ```
-   If `--force`, add `-f force=true`. If `--dry-run`, add `-f dry_run=true`.
-5. Report the workflow URL and status
-
-The GitHub Actions workflow handles building with the production `LICENSE_SECRET`, creating the GitHub Release, updating Gumroad, and deploying the website. The local binary cannot build release artifacts because the production secret is intentionally excluded from local builds (per the Makefile safeguard).
-
-## Example Execution
+### Step 9 — Report
 
 ```
-User: /release-pipeline
-
-  Assistant: Starting release pipeline...
-
-  Version: v1.0.4 (auto-incremented)
-
-  Committing changes and pushing to main...
-  ✓ Pushed to main
-
-  Triggering GitHub Actions workflow...
-  ✓ Workflow triggered: https://github.com/gjunqueira-sys/ScheduleGate/actions/runs/...
-
-  The release pipeline will:
-    1. Detect product changes
-    2. Run tests on ubuntu/macos/windows
-    3. Build all 4 binaries with production LICENSE_SECRET
-    4. Create GitHub Release + tag
-    5. Update Gumroad product
-    6. Deploy website to Vercel
-
-  Track progress at the URL above.
+Released ${VERSION}
+  GitHub:  https://github.com/gjunqueira-sys/ScheduleGate/releases/tag/${VERSION}
+  Zip:     schedulegate-${VERSION}.zip
+  Website: https://www.schedulegate.dev
+  Gumroad: https://junqueira5.gumroad.com/l/schedulegate
 ```
 
 ## Flags
@@ -255,11 +227,14 @@ User: /release-pipeline
 |------|-------------|
 | `--force` | Skip change detection, always release |
 | `--version X.Y.Z` | Manual version override (skip auto-increment) |
-| `--dry-run` | Run tests + build only, skip GitHub/Gumroad publish |
+| `--dry-run` | CI build + test only; skip GitHub Release, Gumroad, website |
+
+## Failure policy
+
+The pipeline fails completely on the first error. A GitHub Release without a Gumroad update is a **partial release** — fix Gumroad before telling the user it shipped. Do not create a second tag to retry Gumroad; re-run only Step 7–8.
 
 ## Notes
 
-- Gumroad credentials are automatically set: giljunqueira@outlook.com
-- The pipeline fails completely if any step fails
-- Use `--dry-run` to test without publishing
-- First release uses `v1.0.3` (continuing from Makefile VERSION `1.0.2`)
+- First-tag fallback in `version.sh` is `v1.0.2` (only used when the repo has no tags).
+- Website curl URL is versioned (`.../releases/latest/download/schedulegate-vX.Y.Z.zip`). That is why `web/index.html` must be synced **before** the Vercel deploy in `release.yml`.
+- `cmd/manualcheck --update-version` is **not** used in CI. Version rewrites happen locally via `versionsync` and are committed, so git stays the source of truth.

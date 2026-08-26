@@ -24,21 +24,22 @@ The release pipeline automates the entire process from code changes to product u
 
 ```mermaid
 flowchart TD
-    A[Push to main] --> B{Product Changes?}
+    A["/release-pipeline"] --> B{Product Changes?}
     B -->|No| SKIP[Skip Release]
-    B -->|Yes| C[Run Tests + Coverage Gate]
-    C --> D[Auto-increment Version]
-    D --> E[Build 4 Binaries]
-    E --> F[Create Zip Package]
-    F --> G[Create GitHub Release + Tag]
-    G --> H[Upload Zip as Asset]
-    H --> I[Gumroad Browser Automation]
-    I --> J[Update Product + Description]
-    J --> K[✓ Release Complete]
-    
+    B -->|Yes| V[versionsync --apply]
+    V --> P[Commit + push to main]
+    P --> W[gh workflow run release.yml]
+    W --> C[CI: tests + coverage]
+    C --> S[CI: versionsync --check]
+    S --> E[CI: build 4 signed binaries]
+    E --> F[CI: zip + GitHub Release + tag]
+    F --> D[CI: deploy website]
+    D --> I[Local: Gumroad Playwright]
+    I --> K[Release complete]
     C -->|Fail| FAIL[Fail Pipeline]
+    S -->|Fail| FAIL
     E -->|Fail| FAIL
-    G -->|Fail| FAIL
+    F -->|Fail| FAIL
     I -->|Fail| FAIL
 ```
 
@@ -67,11 +68,12 @@ Use `--force` to skip this check.
 
 Versions follow semantic versioning (semver): `vMAJOR.MINOR.PATCH`
 
-- **Auto-increment**: Bumps the patch version automatically
+- **Auto-increment**: Bumps the patch version from the latest git tag
   - `v1.0.2` → `v1.0.3`
   - `v1.0.9` → `v1.0.10`
 - **Manual override**: Use `--version X.Y.Z` to set any version
-- **First release**: Defaults to `v1.0.3` (continuing from Makefile VERSION)
+- **File sync**: `go run ./cmd/versionsync --apply vX.Y.Z` rewrites Makefile, README.md, web/index.html, `internal/version/version.go`, desktop `info.version`, and both HTML manuals so they all show the same rev. CI then runs `--check` and fails on drift.
+- **Do not** rewrite historical examples in `RELEASE.md`
 
 ### 3. Test Suite
 
@@ -126,13 +128,15 @@ A new GitHub Release is created with:
 
 ### 7. Gumroad Update
 
-The Gumroad product page is updated via browser automation:
+Gumroad is **not** updated by GitHub Actions (no browser in CI). After the GitHub Release exists, `/release-pipeline` downloads `schedulegate-${VERSION}.zip` and drives Gumroad with Playwright:
 
-1. Login to Gumroad
-2. Navigate to product edit page
-3. Upload new zip file (replaces old version)
-4. Replace product description with latest release notes
-5. Save/publish changes
+1. Login with `GUMROAD_EMAIL` / `GUMROAD_PASSWORD` (env vars only — never hardcoded)
+2. Open the product edit page
+3. Delete the previous zip, upload the GitHub Release zip, **Save immediately**
+4. Replace the product description, Save again
+5. Verify file name, size, and version
+
+See `.opencode/commands/release-pipeline.md` Step 8 for the exact UI sequence. Saving after the file upload *before* editing the description is required — otherwise Gumroad drops the new file.
 
 ## Prerequisites
 
@@ -146,7 +150,10 @@ The Gumroad product page is updated via browser automation:
 ### For GitHub Actions
 
 - **GitHub Token**: Automatically provided (for creating releases)
-- **Gumroad Credentials** (optional): Store as GitHub Secrets for full automation
+- **`LICENSE_SECRET`**: Production signing secret (Actions secret only — never a local env)
+- **Vercel**: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` for website deploy
+
+Gumroad credentials stay on the local machine (`GUMROAD_EMAIL`, `GUMROAD_PASSWORD`). They are not GitHub Secrets.
 
 ## Configuration
 
@@ -160,13 +167,12 @@ The Gumroad product page is updated via browser automation:
 
 ### GitHub Secrets
 
-For fully automated releases (no prompts), add these to your repository secrets:
+Required for `release.yml` (Settings → Secrets and variables → Actions):
 
-1. Go to Settings → Secrets and variables → Actions
-2. Add:
-   - `GUMROAD_EMAIL`
-   - `GUMROAD_PASSWORD`
-   - `GUMROAD_PRODUCT_URL` (optional)
+- `LICENSE_SECRET`
+- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+
+Gumroad env vars are local-only. Never commit them.
 
 ## Manual Release
 

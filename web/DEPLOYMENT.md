@@ -16,13 +16,15 @@ The following secrets must be configured in the repository settings (`Settings >
 | `VERCEL_ORG_ID` | `team_SVnVnXka9ktKSd4TxChhLsQd` | Vercel team/organization ID |
 | `VERCEL_PROJECT_ID` | `prj_7i3AZzH2nzM0ztJx5uGArtd8hGxh` | Vercel project ID for the website |
 
-### Gumroad Integration (already configured)
+### Gumroad (local Playwright, not GitHub Secrets)
 
-| Secret Name | Value | Description |
-|-------------|-------|-------------|
-| `GUMROAD_EMAIL` | *Your Gumroad email* | Login email for Gumroad |
-| `GUMROAD_PASSWORD` | *Your Gumroad password* | Login password for Gumroad |
-| `GUMROAD_PRODUCT_URL` | `https://junqueira5.gumroad.com/l/schedulegate` | Product page URL |
+Set these in your shell before `/release-pipeline`. Never commit them.
+
+| Variable | Description |
+|----------|-------------|
+| `GUMROAD_EMAIL` | Gumroad login email |
+| `GUMROAD_PASSWORD` | Gumroad login password |
+| `GUMROAD_PRODUCT_URL` | Optional. Default: `https://junqueira5.gumroad.com/l/schedulegate` |
 
 ## Getting a Vercel Token
 

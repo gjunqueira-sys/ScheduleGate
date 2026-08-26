@@ -132,6 +132,19 @@ jobs:
           echo "zip_name=schedulegate-${VERSION}.zip" >> "$GITHUB_OUTPUT"
           echo "Releasing: ${VERSION}"
 
+      - name: Verify version sync
+        if: inputs.dry_run != true
+        run: go run ./cmd/versionsync --check "${{ steps.version.outputs.version }}"
+
+      - name: Verify user manual
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
+            go run ./cmd/manualcheck
+          else
+            go run ./cmd/manualcheck --expect-version "${VERSION}"
+          fi
+
       - name: Build CLI binaries
         run: |
           mkdir -p release
@@ -191,12 +204,6 @@ jobs:
           fi
 
           echo "All binaries verified."
-
-      - name: Sync & verify user manual
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          go run ./cmd/manualcheck --update-version "${VERSION}"
-          go run ./cmd/manualcheck --expect-version "${VERSION}"
 
       - name: Create zip package
         run: |
