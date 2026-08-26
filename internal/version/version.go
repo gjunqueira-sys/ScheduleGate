@@ -3,7 +3,7 @@ package version
 import "fmt"
 
 // Version is the CLI release version. Override at build time via -ldflags.
-var Version = "1.0.3"
+var Version = "1.0.5"
 
 // Commit is the git commit hash injected at build time. Defaults to "dev".
 var Commit = "dev"
