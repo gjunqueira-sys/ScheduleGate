@@ -282,4 +282,4 @@ For a deep dive into how scores are calculated, see the [Comparison Manual](docs
 
 ---
 
-**Public release:** v1.0.0 — August 2026
+**Public release:** v1.0.5 — August 2026
