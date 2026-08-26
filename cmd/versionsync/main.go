@@ -25,8 +25,8 @@ func targets() []target {
 			RelPath:    "Makefile",
 			Name:       "Makefile VERSION",
 			MinMatches: 1,
-			ExtractRe:  regexp.MustCompile(`(?m)^VERSION \?= (\d+\.\d+\.\d+)$`),
-			ReplaceRe:  regexp.MustCompile(`(?m)^VERSION \?= \d+\.\d+\.\d+$`),
+			ExtractRe:  regexp.MustCompile(`(?m)^VERSION \?= (\d+\.\d+\.\d+)\r?$`),
+			ReplaceRe:  regexp.MustCompile(`(?m)^VERSION \?= \d+\.\d+\.\d+\r?$`),
 			Replacement: func(bare, _ string) string {
 				return "VERSION ?= " + bare
 			},
@@ -65,8 +65,8 @@ func targets() []target {
 			RelPath:    "desktop/build/config.yml",
 			Name:       "desktop info.version",
 			MinMatches: 1,
-			ExtractRe:  regexp.MustCompile(`(?m)^  version: "(\d+\.\d+\.\d+)"$`),
-			ReplaceRe:  regexp.MustCompile(`(?m)^  version: "\d+\.\d+\.\d+"$`),
+			ExtractRe:  regexp.MustCompile(`(?m)^  version: "(\d+\.\d+\.\d+)"\r?$`),
+			ReplaceRe:  regexp.MustCompile(`(?m)^  version: "\d+\.\d+\.\d+"\r?$`),
 			Replacement: func(bare, _ string) string {
 				return `  version: "` + bare + `"`
 			},
@@ -112,7 +112,7 @@ func readFile(root, rel string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(b), nil
+	return strings.ReplaceAll(string(b), "\r\n", "\n"), nil
 }
 
 func extract(t target, content string) []string {

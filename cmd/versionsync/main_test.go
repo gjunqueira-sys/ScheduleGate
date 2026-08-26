@@ -132,6 +132,23 @@ func TestExtractorsOnRealRepo(t *testing.T) {
 	}
 }
 
+func TestExtractorsTolerateCRLF(t *testing.T) {
+	root := t.TempDir()
+	files := fixtureTree()
+	for rel, content := range files {
+		files[rel] = strings.ReplaceAll(content, "\n", "\r\n")
+	}
+	writeTree(t, root, files)
+
+	if err := apply(root, "v2.3.4"); err != nil {
+		t.Fatalf("apply on CRLF tree: %v", err)
+	}
+	problems := check(root, "v2.3.4")
+	if len(problems) > 0 {
+		t.Fatalf("check after CRLF apply: %v", problems)
+	}
+}
+
 func TestDesktopSchemaVersionUntouchedOnRealFile(t *testing.T) {
 	root := filepath.Join("..", "..")
 	content, err := readFile(root, "desktop/build/config.yml")
