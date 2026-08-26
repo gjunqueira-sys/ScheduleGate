@@ -257,48 +257,6 @@ jobs:
 
           echo "✓ Release created: ${VERSION}"
 
-  update-gumroad:
-    name: Update Gumroad product
-    needs: [detect-changes, build-and-zip, create-release]
-    if: needs.detect-changes.outputs.should_release == 'true' && inputs.dry_run != true
-    runs-on: macos-14
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-
-      - name: Download zip artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: release-zip
-
-      - name: Generate Gumroad description
-        run: |
-          VERSION="${{ needs.build-and-zip.outputs.version }}"
-          bash scripts/release/release-notes.sh "${VERSION}" > /tmp/gumroad-description.md
-
-      - name: Update Gumroad via browser automation
-        env:
-          GUMROAD_EMAIL: ${{ secrets.GUMROAD_EMAIL }}
-          GUMROAD_PASSWORD: ${{ secrets.GUMROAD_PASSWORD }}
-          GUMROAD_PRODUCT_URL: ${{ secrets.GUMROAD_PRODUCT_URL || 'https://junqueira5.gumroad.com/l/schedulegate' }}
-          RELEASE_VERSION: ${{ needs.build-and-zip.outputs.version }}
-        run: |
-          echo "Updating Gumroad product..."
-          echo "Version: ${RELEASE_VERSION}"
-          echo "Zip: schedulegate-${RELEASE_VERSION}.zip"
-
-          # Run the Go script for browser automation
-          cd scripts/release/gumroad
-          go run main.go \
-            --zip "../../schedulegate-${RELEASE_VERSION}.zip" \
-            --description "/tmp/gumroad-description.md" \
-            --version "${RELEASE_VERSION}"
-
   deploy-website:
     name: Deploy website to Vercel
     needs: [detect-changes, build-and-zip, create-release]

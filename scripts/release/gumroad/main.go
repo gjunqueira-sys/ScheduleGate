@@ -2,23 +2,25 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 )
 
-// GumroadBrowserAutomation handles browser-based updates to Gumroad products.
-// This script is designed to be called from the release pipeline.
+// GumroadBrowserAutomation generates structured instructions for updating
+// a Gumroad product via Playwright browser automation.
+//
+// This script is designed to be run from within the opencode session
+// (which has Playwright browser tools available). It outputs a JSON
+// manifest that the assistant reads to execute the browser steps.
 //
 // Usage:
 //
 //	go run main.go --zip path/to/schedulegate-v1.0.3.zip \
 //	               --description path/to/description.md \
 //	               --version v1.0.3
-//
-// The script uses the Playwright browser tools available in the opencode session
-// to navigate Gumroad, login, upload files, and update product descriptions.
 //
 // Credentials are read from:
 //   - Environment variables: GUMROAD_EMAIL, GUMROAD_PASSWORD, GUMROAD_PRODUCT_URL
@@ -27,55 +29,68 @@ import (
 func main() {
 	args := parseArgs()
 
-	fmt.Println("=== Gumroad Product Update ===")
-	fmt.Printf("Version: %s\n", args.version)
-	fmt.Printf("Zip file: %s\n", args.zipPath)
-	fmt.Printf("Description: %s\n", args.descriptionPath)
-	fmt.Println()
-
-	// Get credentials
-	creds, err := getCredentials(args)
+	creds, err := getCredentials()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error getting credentials: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Email: %s\n", creds.email)
-	fmt.Printf("Product URL: %s\n", creds.productURL)
-	fmt.Println()
-
-	// Read the description file
 	description, err := os.ReadFile(args.descriptionPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading description file: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Println("Description loaded successfully")
-	fmt.Println()
+	manifest := Manifest{
+		Version:              args.version,
+		ZipPath:              args.zipPath,
+		Description:          string(description),
+		DescriptionPath:      args.descriptionPath,
+		GumroadLoginURL:      "https://gumroad.com/login",
+		GumroadEmail:         creds.email,
+		GumroadPasswordHint:  "use GUMROAD_PASSWORD env var",
+		ProductURL:           creds.productURL,
+		InstructionsPath:     fmt.Sprintf("/tmp/gumroad-instructions-%s.txt", time.Now().Format("20060102-150405")),
+		Steps: []Step{
+			{Number: 1, Action: "navigate", Target: "https://gumroad.com/login", Description: "Navigate to Gumroad login page"},
+			{Number: 2, Action: "login", Target: "login form", Description: "Enter credentials and login"},
+			{Number: 3, Action: "navigate", Target: creds.productURL, Description: "Navigate to product edit page"},
+			{Number: 4, Action: "click", Target: "Upload files button", Description: "Click upload/add file button"},
+			{Number: 5, Action: "upload", Target: args.zipPath, Description: "Upload the release zip file"},
+			{Number: 6, Action: "wait", Target: "upload progress bar", Description: "Wait for upload to complete"},
+			{Number: 7, Action: "replace_text", Target: "product description editor", Description: "Replace entire product description"},
+			{Number: 8, Action: "click", Target: "Save/Publish button", Description: "Click Save or Publish changes"},
+			{Number: 9, Action: "verify", Target: "product page", Description: "Verify version and file are updated"},
+		},
+	}
 
-	// Execute the browser automation steps
-	// Note: This script is designed to be run within the opencode session
-	// which has Playwright browser tools available. The actual browser
-	// automation will be performed by the assistant using the available tools.
-	fmt.Println("=== Browser Automation Steps ===")
-	fmt.Println()
-	fmt.Println("The following steps will be performed via Playwright:")
-	fmt.Println("1. Navigate to Gumroad login page")
-	fmt.Println("2. Enter credentials and login")
-	fmt.Println("3. Navigate to product edit page")
-	fmt.Println("4. Upload new zip file")
-	fmt.Println("5. Replace product description")
-	fmt.Println("6. Save/publish changes")
-	fmt.Println("7. Verify success")
-	fmt.Println()
+	// Write human-readable instructions file
+	saveInstructions(creds, args, manifest.InstructionsPath)
 
-	// Generate step-by-step instructions for the assistant
-	generateInstructions(creds, args, string(description))
+	// Output JSON manifest for the assistant to consume
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	enc.Encode(manifest)
+}
 
-	fmt.Println()
-	fmt.Println("=== Instructions Generated ===")
-	fmt.Println("The assistant will now execute these steps using Playwright browser tools.")
+type Step struct {
+	Number      int    `json:"number"`
+	Action      string `json:"action"`
+	Target      string `json:"target"`
+	Description string `json:"description"`
+}
+
+type Manifest struct {
+	Version             string `json:"version"`
+	ZipPath             string `json:"zip_path"`
+	Description         string `json:"description"`
+	DescriptionPath     string `json:"description_path"`
+	GumroadLoginURL     string `json:"gumroad_login_url"`
+	GumroadEmail        string `json:"gumroad_email"`
+	GumroadPasswordHint string `json:"gumroad_password_hint"`
+	ProductURL          string `json:"product_url"`
+	InstructionsPath    string `json:"instructions_path"`
+	Steps               []Step `json:"steps"`
 }
 
 type Args struct {
@@ -126,7 +141,7 @@ func parseArgs() Args {
 	return args
 }
 
-func getCredentials(args Args) (Credentials, error) {
+func getCredentials() (Credentials, error) {
 	creds := Credentials{
 		email:      os.Getenv("GUMROAD_EMAIL"),
 		password:   os.Getenv("GUMROAD_PASSWORD"),
@@ -150,8 +165,6 @@ func getCredentials(args Args) (Credentials, error) {
 
 	if creds.password == "" {
 		fmt.Print("Gumroad Password: ")
-		// Note: In a real implementation, you'd want to use terminal
-		// password input (no echo). For now, we read from stdin.
 		password, err := reader.ReadString('\n')
 		if err != nil {
 			return creds, err
@@ -162,29 +175,8 @@ func getCredentials(args Args) (Credentials, error) {
 	return creds, nil
 }
 
-func generateInstructions(creds Credentials, args Args, description string) {
-	fmt.Println("=== Playwright Instructions ===")
-	fmt.Println()
-	fmt.Printf("# Step 1: Navigate to Gumroad login\n")
-	fmt.Printf("# URL: https://gumroad.com/login\n")
-	fmt.Println()
-	fmt.Printf("# Step 2: Login\n")
-	fmt.Printf("# Email: %s\n", creds.email)
-	fmt.Printf("# Password: [hidden]\n")
-	fmt.Println()
-	fmt.Printf("# Step 3: Navigate to product edit page\n")
-	fmt.Printf("# URL: %s\n", creds.productURL)
-	fmt.Println()
-	fmt.Printf("# Step 4: Upload file\n")
-	fmt.Printf("# File: %s\n", args.zipPath)
-	fmt.Println()
-	fmt.Printf("# Step 5: Update description\n")
-	fmt.Printf("# Length: %d characters\n", len(description))
-	fmt.Println()
-
-	// Save instructions to a file for the assistant
-	instructionFile := fmt.Sprintf("/tmp/gumroad-instructions-%s.txt", time.Now().Format("20060102-150405"))
-	f, err := os.Create(instructionFile)
+func saveInstructions(creds Credentials, args Args, path string) {
+	f, err := os.Create(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: Could not create instruction file: %v\n", err)
 		return
@@ -195,7 +187,7 @@ func generateInstructions(creds Credentials, args Args, description string) {
 	fmt.Fprintf(f, "Generated: %s\n\n", time.Now().Format(time.RFC3339))
 	fmt.Fprintf(f, "Credentials:\n")
 	fmt.Fprintf(f, "  Email: %s\n", creds.email)
-	fmt.Fprintf(f, "  Password: [use environment variable or prompt]\n")
+	fmt.Fprintf(f, "  Password: [use environment variable]\n")
 	fmt.Fprintf(f, "  Product URL: %s\n\n", creds.productURL)
 	fmt.Fprintf(f, "Files:\n")
 	fmt.Fprintf(f, "  Zip: %s\n", args.zipPath)
@@ -204,13 +196,10 @@ func generateInstructions(creds Credentials, args Args, description string) {
 	fmt.Fprintf(f, "1. Navigate to https://gumroad.com/login\n")
 	fmt.Fprintf(f, "2. Login with credentials\n")
 	fmt.Fprintf(f, "3. Navigate to product edit page: %s\n", creds.productURL)
-	fmt.Fprintf(f, "4. Find file upload section\n")
-	fmt.Fprintf(f, "5. Remove old file if exists\n")
-	fmt.Fprintf(f, "6. Upload: %s\n", args.zipPath)
-	fmt.Fprintf(f, "7. Find description editor\n")
-	fmt.Fprintf(f, "8. Replace entire description with content from: %s\n", args.descriptionPath)
-	fmt.Fprintf(f, "9. Click Save/Publish\n")
-	fmt.Fprintf(f, "10. Verify success\n")
-
-	fmt.Printf("Instructions saved to: %s\n", instructionFile)
+	fmt.Fprintf(f, "4. Find file upload section, remove old file if exists\n")
+	fmt.Fprintf(f, "5. Upload: %s\n", args.zipPath)
+	fmt.Fprintf(f, "6. Wait for upload to complete\n")
+	fmt.Fprintf(f, "7. Find description editor, replace entire content\n")
+	fmt.Fprintf(f, "8. Click Save/Publish\n")
+	fmt.Fprintf(f, "9. Verify success\n")
 }
