@@ -45,7 +45,7 @@ Invoked via `/release-pipeline`. Local command syncs every version-bearing file,
 
 **Gumroad credentials**: `GUMROAD_EMAIL`, `GUMROAD_PASSWORD`, optional `GUMROAD_PRODUCT_URL`. Never hardcode. Never commit.
 
-**Zip contents**: `schedulegate` (macOS), `schedulegate.exe` (Windows), `schedulegate-linux` (Linux), `schedulegate-gui` (Desktop GUI), `README.txt`, `LICENSE`, `user-manual.html`
+**Zip contents**: `schedulegate` (macOS), `schedulegate.exe` (Windows), `schedulegate-linux` (Linux), `README.txt`, `LICENSE` (AGPLv3), `LICENSE-COMMERCIAL`, `user-manual.html`. Desktop GUI is not shipped.
 
 **Version sync gate**: `cmd/versionsync --check` fails the release job unless every customer-facing file shows the release version. `cmd/manualcheck` verifies `docs/user-manual.html` matches the CLI surface (commands, flags, DCMA metric thresholds). Both run in `release.yml`; `go test ./cmd/manualcheck/... ./cmd/versionsync/...` covers them in regular CI.
 

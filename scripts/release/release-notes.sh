@@ -59,9 +59,8 @@ cat <<EOF
 - \`schedulegate\` — macOS (arm64) CLI
 - \`schedulegate.exe\` — Windows (amd64) CLI
 - \`schedulegate-linux\` — Linux (amd64) CLI
-- \`schedulegate-gui\` — macOS (arm64) Desktop GUI
 
-All binaries are bundled in a single zip file for convenience.
+CLI binaries are bundled in a single zip file for convenience.
 
 ## Installation
 
@@ -84,5 +83,5 @@ schedulegate --version
 - [CLI Reference](https://github.com/gjunqueira-sys/ScheduleGate/blob/main/AGENTS.md)
 
 ---
-*Released under MIT License*
+Community use is licensed under AGPLv3. Purchased Pro keys are licensed under LICENSE-COMMERCIAL.
 EOF

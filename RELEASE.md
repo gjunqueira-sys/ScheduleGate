@@ -104,17 +104,17 @@ Four binaries are compiled:
 
 ### 5. Zip Package
 
-All binaries are packaged into a single zip file:
+CLI binaries are packaged into a single zip file:
 
 ```
 schedulegate-v1.0.3.zip
 ├── schedulegate           # macOS CLI
 ├── schedulegate.exe       # Windows CLI
 ├── schedulegate-linux     # Linux CLI
-├── schedulegate-gui       # macOS Desktop GUI
 ├── README.txt             # Installation guide
-├── LICENSE                # AGPLv3 License (dual-licensed: see LICENSE-COMMERCIAL)
-└── LICENSE-COMMERCIAL     # Commercial License terms
+├── LICENSE                # AGPLv3
+├── LICENSE-COMMERCIAL     # Commercial license terms
+└── user-manual.html       # User manual
 ```
 
 ### 6. GitHub Release
@@ -301,7 +301,6 @@ Release notes are auto-generated from git commits:
 - schedulegate — macOS (arm64) CLI
 - schedulegate.exe — Windows (amd64) CLI
 - schedulegate-linux — Linux (amd64) CLI
-- schedulegate-gui — macOS (arm64) Desktop GUI
 
 ## Installation
 1. Download and extract zip

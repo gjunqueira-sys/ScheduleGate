@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Package release binaries into a zip file with README and LICENSE
+# Package CLI release binaries into a zip with README, licenses, and user manual.
 # Usage: bash scripts/release/zip-binaries.sh [version]
 
 VERSION="${1:-}"
@@ -14,26 +14,22 @@ if [[ -z "$VERSION" ]]; then
     exit 1
 fi
 
-# Create release directory if it doesn't exist
 mkdir -p "$RELEASE_DIR"
 
-# Verify all binaries exist
 BINARIES=(
     "$RELEASE_DIR/schedulegate"
     "$RELEASE_DIR/schedulegate.exe"
     "$RELEASE_DIR/schedulegate-linux"
-    "$RELEASE_DIR/schedulegate-gui"
 )
 
 for bin in "${BINARIES[@]}"; do
     if [[ ! -f "$bin" ]]; then
         echo "Error: Missing binary: $bin" >&2
-        echo "Build all binaries first." >&2
+        echo "Build all CLI binaries first." >&2
         exit 1
     fi
 done
 
-# Generate README.txt
 cat > "$RELEASE_DIR/README.txt" <<'READMEEOF'
 ScheduleGate - DCMA 14-Point Schedule Assessment CLI
 ====================================================
@@ -42,89 +38,78 @@ Binaries included:
   schedulegate       - macOS (arm64) CLI
   schedulegate.exe   - Windows (amd64) CLI
   schedulegate-linux - Linux (amd64) CLI
-  schedulegate-gui   - macOS (arm64) Desktop GUI
 
 Installation:
   1. Extract this zip file
-  2. Move the binary to a directory in your PATH
-     macOS/Linux: sudo mv schedulegate /usr/local/bin/
+  2. Move the binary for your OS into a directory on your PATH
+     macOS:   sudo mv schedulegate /usr/local/bin/
+     Linux:   sudo mv schedulegate-linux /usr/local/bin/schedulegate
      Windows: Move schedulegate.exe to a folder in your PATH
   3. Verify: schedulegate --version
 
+Tiers:
+  Community (free, AGPLv3)
+    - No license key required
+    - 1 assessment per calendar month, terminal output only
+    - validate is always free
+
+  Pro (commercial)
+    - Unlimited assessments
+    - HTML, CSV, Excel, and JSON reports
+    - compare and check-patterns
+    - Activate: schedulegate license set SG-...
+    - Buy: https://schedulegate.dev
+
 Quick Start:
-  # Assess a schedule against DCMA 14-point metrics
+  # Community: terminal assessment
   schedulegate assess schedule.xlsx
 
-  # Compare two schedule versions
+  # After activating Pro
+  schedulegate assess schedule.xlsx --html report.html
   schedulegate compare old.xlsx new.xlsx
 
-  # Validate column structure
-  schedulegate validate schedule.xlsx
-
-  # Show help
-  schedulegate --help
-
 Documentation:
-  GitHub: https://github.com/gjunqueira-sys/ScheduleGate
-  User Manual: Open user-manual.html in any browser
+  Open user-manual.html in any browser
+  Website: https://schedulegate.dev
+  GitHub:  https://github.com/gjunqueira-sys/ScheduleGate
 
-License: MIT (see LICENSE file)
+License:
+  Community use is licensed under AGPLv3 (see LICENSE).
+  Purchased Pro keys are licensed under LICENSE-COMMERCIAL.
 READMEEOF
 
-# Verify LICENSE file exists at project root
 if [[ ! -f "LICENSE" ]]; then
-    echo "Warning: LICENSE file not found at project root" >&2
-    echo "Creating placeholder LICENSE" >&2
-    cat > "$RELEASE_DIR/LICENSE" <<'LICEOF'
-MIT License
-
-Copyright (c) 2026 Gil Junqueira
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-LICEOF
-else
-    cp LICENSE "$RELEASE_DIR/LICENSE"
+    echo "Error: LICENSE file not found at project root" >&2
+    exit 1
 fi
+cp LICENSE "$RELEASE_DIR/LICENSE"
 
-# Copy user manual to release directory
+if [[ ! -f "LICENSE-COMMERCIAL" ]]; then
+    echo "Error: LICENSE-COMMERCIAL file not found at project root" >&2
+    exit 1
+fi
+cp LICENSE-COMMERCIAL "$RELEASE_DIR/LICENSE-COMMERCIAL"
+
 if [[ ! -f "docs/user-manual.html" ]]; then
     echo "Error: docs/user-manual.html not found" >&2
     exit 1
 fi
 cp docs/user-manual.html "$RELEASE_DIR/user-manual.html"
 
-# Create zip file
 cd "$RELEASE_DIR"
 rm -f "../$ZIP_NAME"
 zip -r "../$ZIP_NAME" \
     schedulegate \
     schedulegate.exe \
     schedulegate-linux \
-    schedulegate-gui \
     README.txt \
     LICENSE \
+    LICENSE-COMMERCIAL \
     user-manual.html
 
 cd ..
 
-# Report
 ZIP_SIZE=$(du -h "$ZIP_NAME" | cut -f1)
 echo "Created: $ZIP_NAME ($ZIP_SIZE)"
 echo "Contents:"
-unzip -l "$ZIP_NAME" | tail -n +4 | head -n 8
+unzip -l "$ZIP_NAME"
