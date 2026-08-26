@@ -277,6 +277,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Host user manual
+        run: cp docs/user-manual.html web/docs.html
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 

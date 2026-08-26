@@ -348,6 +348,14 @@
             border-color: var(--accent);
         }
         .price-card.featured .price-btn:hover { background: var(--accent-hover); }
+        .price-card.soon { opacity: 0.72; }
+        .price-btn.soon {
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.7;
+            border-color: var(--border);
+            color: var(--text-dim);
+        }
 
         /* ── INSTALL ── */
         .install { padding: 80px 0; border-top: 1px solid var(--border); }
@@ -383,6 +391,21 @@
             margin-top: 8px;
         }
         .code-block .dollar { color: var(--accent); user-select: none; }
+        .install-note {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+            line-height: 1.55;
+        }
+        .install-note code {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            color: var(--text);
+            background: var(--bg);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
 
         /* ── CI/CD ── */
         .cicd { padding: 80px 0; border-top: 1px solid var(--border); }
@@ -467,19 +490,19 @@
 <span class="card-border">  ╰────────────────────────────╯</span>
 
 <span class="section-hdr">METRIC RESULTS</span>
-<span class="badge-pass"> PASS</span>  Logic                     <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Leads                     <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Lags                      <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Relationship Types        <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Hard Constraints          <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  High Float                 <span class="metric-val">95.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Negative Float            <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  High Duration             <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Invalid Dates              <span class="metric-val">98.5%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Resources                 <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-fail"> FAIL</span>  Missed Tasks               <span class="metric-val">45.2%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Critical Path Test         <span class="metric-val">92.0%</span>  <span class="metric-thresh">(Threshold: 80.0%)</span>
-<span class="badge-pass"> PASS</span>  Critical Path Length Index <span class="metric-val">1.02</span>   <span class="metric-thresh">(Threshold: 0.95)</span>
+<span class="badge-pass"> PASS</span>  Logic                       <span class="metric-val">2.1%</span>  <span class="metric-thresh">(Threshold: 5.0%)</span>
+<span class="badge-pass"> PASS</span>  Leads                       <span class="metric-val">0.0%</span>  <span class="metric-thresh">(Threshold: 0.0%)</span>
+<span class="badge-pass"> PASS</span>  Lags                        <span class="metric-val">6.4%</span>  <span class="metric-thresh">(Threshold: 10.0%)</span>
+<span class="badge-pass"> PASS</span>  Relationship Types         <span class="metric-val">94.8%</span>  <span class="metric-thresh">(Threshold: 90.0%)</span>
+<span class="badge-pass"> PASS</span>  Hard Constraints            <span class="metric-val">1.2%</span>  <span class="metric-thresh">(Threshold: 5.0%)</span>
+<span class="badge-pass"> PASS</span>  High Float                  <span class="metric-val">3.1%</span>  <span class="metric-thresh">(Threshold: 5.0%)</span>
+<span class="badge-pass"> PASS</span>  Negative Float              <span class="metric-val">0.4%</span>  <span class="metric-thresh">(Threshold: 5.0%)</span>
+<span class="badge-pass"> PASS</span>  High Duration               <span class="metric-val">5.8%</span>  <span class="metric-thresh">(Threshold: 10.0%)</span>
+<span class="badge-pass"> PASS</span>  Invalid Dates               <span class="metric-val">0.0%</span>  <span class="metric-thresh">(Threshold: 0.0%)</span>
+<span class="badge-pass"> PASS</span>  Resources                  <span class="metric-val">97.2%</span>  <span class="metric-thresh">(Threshold: 95.0%)</span>
+<span class="badge-fail"> FAIL</span>  Missed Tasks               <span class="metric-val">12.4%</span>  <span class="metric-thresh">(Threshold: 5.0%)</span>
+<span class="badge-pass"> PASS</span>  Critical Path Test        <span class="metric-val">100.0%</span>  <span class="metric-thresh">(Threshold: 100.0%)</span>
+<span class="badge-pass"> PASS</span>  Critical Path Length Index <span class="metric-val">1.02</span>   <span class="metric-thresh">(Threshold: 1.00)</span>
 <span class="badge-pass"> PASS</span>  Baseline Execution Index   <span class="metric-val">0.98</span>   <span class="metric-thresh">(Threshold: 0.95)</span>
 
 <span class="prompt">$</span> <span class="cmd">schedulegate compare v1.xlsx v2.xlsx</span>
@@ -514,7 +537,7 @@
             <div class="feature-card">
                 <div class="feature-icon">📊</div>
                 <h3>DCMA 14-Point Assessment</h3>
-                <p>All 14 standard metrics with configurable thresholds. Reads MS Project exports directly — no conversion needed.</p>
+                <p>All 14 standard metrics with DCMA PAM thresholds. Reads MS Project exports directly — no conversion needed.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🔀</div>
@@ -524,7 +547,7 @@
             <div class="feature-card">
                 <div class="feature-icon">⚡</div>
                 <h3>CI/CD Native</h3>
-                <p>JSON output, exit codes, and Docker support. Drop it into GitHub Actions, Jenkins, or any pipeline.</p>
+                <p>JSON output and exit codes. Drop it into GitHub Actions, Jenkins, or any pipeline.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">📄</div>
@@ -549,14 +572,14 @@
     <div class="container">
         <div class="section-label">Metrics</div>
         <h2 class="section-title">14 metrics. One command.</h2>
-        <p class="section-desc">Every metric from DCMA's PAM 4.0, fully implemented with configurable thresholds.</p>
+        <p class="section-desc">Every metric from DCMA's PAM 4.0, fully implemented with published DCMA thresholds.</p>
         <div class="metrics-grid">
             <div class="metric-item"><div class="metric-num">01</div><div class="metric-name">Logic</div><div class="metric-desc">Missing predecessors/successors</div></div>
             <div class="metric-item"><div class="metric-num">02</div><div class="metric-name">Leads</div><div class="metric-desc">Negative lag relationships</div></div>
             <div class="metric-item"><div class="metric-num">03</div><div class="metric-name">Lags</div><div class="metric-desc">Positive lag relationships</div></div>
             <div class="metric-item"><div class="metric-num">04</div><div class="metric-name">Relationship Types</div><div class="metric-desc">Finish-to-Start ratio</div></div>
             <div class="metric-item"><div class="metric-num">05</div><div class="metric-name">Hard Constraints</div><div class="metric-desc">Constraints blocking logic</div></div>
-            <div class="metric-item"><div class="metric-num">06</div><div class="metric-name">High Float</div><div class="metric-desc">Slack &gt; 60 working days</div></div>
+            <div class="metric-item"><div class="metric-num">06</div><div class="metric-name">High Float</div><div class="metric-desc">Slack &gt; 44 working days</div></div>
             <div class="metric-item"><div class="metric-num">07</div><div class="metric-name">Negative Float</div><div class="metric-desc">Tasks with negative slack</div></div>
             <div class="metric-item"><div class="metric-num">08</div><div class="metric-name">High Duration</div><div class="metric-desc">Duration &gt; 60 working days</div></div>
             <div class="metric-item"><div class="metric-num">09</div><div class="metric-name">Invalid Dates</div><div class="metric-desc">Past-dated incomplete tasks</div></div>
@@ -601,19 +624,18 @@
                 </ul>
                 <a href="https://junqueira5.gumroad.com/l/schedulegate" class="price-btn">Buy Pro</a>
             </div>
-            <div class="price-card">
+            <div class="price-card soon">
                 <div class="price-tier">Team</div>
                 <div class="price-amount">$299</div>
                 <div class="price-period">per year</div>
                 <ul class="price-features">
                     <li>Up to 5 users</li>
                     <li>Everything in Pro</li>
-                    <li>CI/CD templates</li>
                     <li>Priority support</li>
                 </ul>
-                <a href="https://junqueira5.gumroad.com/l/schedulegate" class="price-btn">Buy Team</a>
+                <span class="price-btn soon">Coming soon</span>
             </div>
-            <div class="price-card">
+            <div class="price-card soon">
                 <div class="price-tier">Lifetime</div>
                 <div class="price-amount">$199</div>
                 <div class="price-period">one-time</div>
@@ -622,7 +644,7 @@
                     <li>Never expires</li>
                     <li>All future updates</li>
                 </ul>
-                <a href="https://junqueira5.gumroad.com/l/schedulegate" class="price-btn">Buy Lifetime</a>
+                <span class="price-btn soon">Coming soon</span>
             </div>
         </div>
     </div>
@@ -638,12 +660,14 @@
                 <div class="step-num">01</div>
                 <h3>Download</h3>
                 <div class="code-block"><span class="dollar">$</span> curl -sSL https://github.com/gjunqueira-sys/ScheduleGate/releases/latest/download/schedulegate-v1.0.5.zip -o schedulegate.zip</div>
-                <div class="code-block" style="margin-top:8px"><span class="dollar">$</span> unzip schedulegate && chmod +x schedulegate</div>
+                <div class="code-block" style="margin-top:8px"><span class="dollar">$</span> unzip schedulegate.zip</div>
+                <p class="install-note">Binaries: <code>schedulegate</code> (macOS) · <code>schedulegate.exe</code> (Windows) · <code>schedulegate-linux</code> (Linux)</p>
             </div>
             <div class="install-step">
                 <div class="step-num">02</div>
-                <h3>Activate License</h3>
-                <div class="code-block"><span class="dollar">$</span> schedulegate license set SG-xxxxx</div>
+                <h3>Activate license (Pro)</h3>
+                <p class="install-note">Community: skip this step. Pro:</p>
+                <div class="code-block"><span class="dollar">$</span> schedulegate license set SG-…</div>
             </div>
             <div class="install-step">
                 <div class="step-num">03</div>
@@ -668,9 +692,11 @@
     <span class="key">runs-on:</span> <span class="str">ubuntu-latest</span>
     <span class="key">steps:</span>
       - <span class="key">uses:</span> <span class="str">actions/checkout@v4</span>
-      - <span class="key">run:</span> <span class="str">curl -sSL https://github.com/.../schedulegate-linux -o schedulegate</span>
-      - <span class="key">run:</span> <span class="str">chmod +x schedulegate</span>
-      - <span class="key">run:</span> <span class="str">./schedulegate assess ims.xlsx --json --json-output results.json</span>
+      - <span class="key">run:</span> <span class="str">|</span>
+          curl -sSL https://github.com/gjunqueira-sys/ScheduleGate/releases/latest/download/schedulegate-v1.0.5.zip -o sg.zip
+          unzip -j sg.zip schedulegate-linux
+          chmod +x schedulegate-linux
+      - <span class="key">run:</span> <span class="str">./schedulegate-linux assess ims.xlsx --json --json-output results.json</span>
       - <span class="key">uses:</span> <span class="str">actions/upload-artifact@v4</span>
         <span class="key">with:</span>
           <span class="key">name:</span> <span class="str">assessment-results</span>
@@ -683,7 +709,7 @@
     <div class="container">
         <div class="footer-links">
             <a href="https://github.com/gjunqueira-sys/ScheduleGate">GitHub</a>
-            <a href="https://github.com/gjunqueira-sys/ScheduleGate/blob/main/USER_MANUAL.md">Documentation</a>
+            <a href="/docs">Docs</a>
             <a href="https://junqueira5.gumroad.com/l/schedulegate">Buy Pro</a>
             <a href="https://github.com/gjunqueira-sys/ScheduleGate/issues">Issues</a>
         </div>

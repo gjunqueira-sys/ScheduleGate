@@ -241,7 +241,7 @@ Ensure your export includes these columns (case-insensitive detection):
 3.  **Lags**: Relationships with positive lag.
 4.  **Relationship Types**: Finish-to-Start (FS) relationships.
 5.  **Hard Constraints**: Constraints preventing logic flow (e.g., Must Finish On).
-6.  **High Float**: Tasks with total slack > 60 working days.
+6.  **High Float**: Tasks with total slack > 44 working days.
 7.  **Negative Float**: Tasks with negative total slack.
 8.  **High Duration**: Tasks with duration > 60 working days.
 9.  **Invalid Dates**: Tasks with invalid/missing dates.

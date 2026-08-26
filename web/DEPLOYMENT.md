@@ -44,6 +44,9 @@ cd web/
 # Install Vercel CLI (if not already installed)
 npm install -g vercel@latest
 
+# Host the user manual at /docs (required before build)
+cp ../docs/user-manual.html docs.html
+
 # Pull project configuration
 vercel pull --yes
 
@@ -59,6 +62,7 @@ vercel deploy --prod
 ```
 web/
 ├── index.html          # Main landing page (single-page site)
+├── docs.html           # Copied from docs/user-manual.html at deploy time
 ├── vercel.json         # Vercel configuration (headers, routing)
 ├── .vercel/            # Vercel project metadata (tracked in git)
 │   ├── project.json    # Project ID and org ID
@@ -66,11 +70,18 @@ web/
 └── DEPLOYMENT.md       # This file
 ```
 
+`docs.html` is generated in CI (`cp docs/user-manual.html web/docs.html`) and is not committed (`*.html` is gitignored except `web/index.html`). `cleanUrls` serves it at `/docs`.
+
+`/pricing` redirects to `/#pricing` so CLI upgrade links do not 404.
+
 ## License Information
 
 The website footer should reflect the dual-license model:
 - **Community tier**: AGPLv3 (free, 1 assessment/month)
-- **Pro/Team/Lifetime tiers**: Commercial License (overrides AGPLv3)
+- **Pro** (for sale): Commercial License via Gumroad
+- **Team / Lifetime**: shown as Coming soon — no checkout
+
+Footer links: GitHub, Docs (`/docs`), Buy Pro, Issues. Do not add Terms / Privacy / Refund until Phase 6.
 
 Current footer text:
 ```
@@ -82,7 +93,7 @@ ScheduleGate © 2026. Dual-licensed under AGPLv3 + Commercial License.
 Since the website is a single HTML file, manual edits are required for:
 
 1. **Version updates** - Update terminal demo output, feature descriptions
-2. **Pricing changes** - Update pricing cards in `#pricing` section
+2. **Pricing changes** - Pro is the only paid CTA. Do not add Team/Lifetime/Enterprise buy links.
 3. **License text** - Update footer copyright/license line
 4. **Changelog** - Consider adding a `/changelog` page or modal
 

@@ -1183,7 +1183,7 @@
             <strong>Logic</strong>
             <span class="pam-ref">PAM § 4.1 — Network Logic</span>
           </div>
-          <span class="metric-threshold threshold-lte">≤ 10%</span>
+          <span class="metric-threshold threshold-lte">≤ 5%</span>
           <span class="metric-chevron">▾</span>
         </div>
         <div class="metric-body">
@@ -1215,7 +1215,7 @@
             </div>
             <div class="info-block">
               <div class="info-block-label">Threshold &amp; direction</div>
-              <p><strong>Pass</strong> when result ≤ 10 %. Lower is better.</p>
+              <p><strong>Pass</strong> when result ≤ 5 %. Lower is better.</p>
             </div>
           </div>
           <div class="info-block" style="margin-top:.8rem;">
@@ -1241,15 +1241,14 @@
             <strong>Leads</strong>
             <span class="pam-ref">PAM § 4.2 — Leads (Negative Lag)</span>
           </div>
-          <span class="metric-threshold threshold-lte">≤ 5%</span>
+          <span class="metric-threshold threshold-lte">0%</span>
           <span class="metric-chevron">▾</span>
         </div>
         <div class="metric-body">
           <p style="font-size:.9rem;color:var(--text-muted);margin-top:.9rem;">
             Negative lag (a "lead") allows a successor to start before its
             predecessor finishes. DCMA treats this as artificial schedule
-            compression that hides true logic; the PAM goal is zero, and this
-            tool's pass threshold is ≤ 5%.
+            compression that hides true logic; the PAM goal is zero.
           </p>
           <div class="metric-body-grid">
             <div class="info-block">
@@ -1273,7 +1272,7 @@
             </div>
             <div class="info-block">
               <div class="info-block-label">Threshold &amp; direction</div>
-              <p><strong>Pass</strong> when result ≤ 5 %. Lower is better.</p>
+              <p><strong>Pass</strong> when result equals 0% (zero tolerance).</p>
             </div>
           </div>
         </div>
@@ -1424,7 +1423,7 @@
             <strong>High Float</strong>
             <span class="pam-ref">PAM § 4.6 — High Float</span>
           </div>
-          <span class="metric-threshold threshold-lte">≤ 10%</span>
+          <span class="metric-threshold threshold-lte">≤ 5%</span>
           <span class="metric-chevron">▾</span>
         </div>
         <div class="metric-body">
@@ -1438,21 +1437,21 @@
             <div class="info-block">
               <div class="info-block-label">What it measures</div>
               <p>The percentage of incomplete work tasks whose
-              <code>Total Slack</code> field exceeds the 60-working-day
+              <code>Total Slack</code> field exceeds the 44-working-day
               threshold.</p>
             </div>
             <div class="info-block">
               <div class="info-block-label">Threshold value</div>
-              <p>60 working days (~3 calendar months). Tasks with
-              <code>TotalSlack &gt; 60</code> are flagged.</p>
+              <p>44 working days (~2 calendar months). Tasks with
+              <code>TotalSlack &gt; 44</code> are flagged.</p>
             </div>
             <div class="info-block">
               <div class="info-block-label">Formula</div>
-              <div class="formula">tasks with TotalSlack &gt; 60 ÷ total incomplete work tasks</div>
+              <div class="formula">tasks with TotalSlack &gt; 44 ÷ total incomplete work tasks</div>
             </div>
             <div class="info-block">
               <div class="info-block-label">Threshold &amp; direction</div>
-              <p><strong>Pass</strong> when result ≤ 10 %. Lower is better.</p>
+              <p><strong>Pass</strong> when result ≤ 5 %. Lower is better.</p>
             </div>
           </div>
         </div>
