@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — ScheduleGate</title>
+    <meta name="description" content="Draft privacy policy for ScheduleGate. Not in force until published.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a0a0a;
+            --bg-raised: #111111;
+            --bg-card: #161616;
+            --border: #222222;
+            --border-bright: #333333;
+            --text: #e8e8e8;
+            --text-muted: #888888;
+            --text-dim: #555555;
+            --accent: #00d4aa;
+            --accent-dim: #00d4aa22;
+            --accent-hover: #00f5c4;
+            --yellow: #ffd93d;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        body { font-family: var(--font-sans); background: var(--bg); color: var(--text); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { color: var(--accent-hover); }
+        .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+        nav { position: sticky; top: 0; z-index: 10; background: #0a0a0aee; backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 16px 0; }
+        nav .container { display: flex; align-items: center; justify-content: space-between; }
+        .nav-logo { font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem; color: var(--text); }
+        .nav-logo span { color: var(--accent); }
+        .nav-back { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+        .nav-back:hover { color: var(--text); }
+        main { padding: 48px 0 80px; }
+        .draft {
+            font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.4px;
+            color: var(--yellow); background: #ffd93d14; border: 1px solid #ffd93d44;
+            padding: 10px 14px; border-radius: 8px; margin-bottom: 28px;
+        }
+        h1 { font-size: 2rem; letter-spacing: -0.8px; margin-bottom: 8px; }
+        .meta { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 36px; }
+        h2 { font-size: 1.15rem; margin: 36px 0 12px; letter-spacing: -0.3px; }
+        p, li { color: var(--text-muted); font-size: 0.95rem; }
+        p + p { margin-top: 12px; }
+        ul { margin: 12px 0 0 20px; }
+        li { margin: 6px 0; }
+        strong { color: var(--text); font-weight: 600; }
+        code { font-family: var(--font-mono); font-size: 0.82em; color: var(--text); background: var(--bg-raised); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+        .related { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.88rem; }
+        footer { border-top: 1px solid var(--border); padding: 32px 0 48px; text-align: center; }
+        .footer-copy { font-size: 0.78rem; color: var(--text-dim); }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="container">
+        <a class="nav-logo" href="/">schedule<span>gate</span></a>
+        <a class="nav-back" href="/">Back to site</a>
+    </div>
+</nav>
+<main>
+    <div class="container">
+        <div class="draft">DRAFT — not in force. Do not treat this as a live policy. Pending review before publication.</div>
+        <h1>Privacy Policy</h1>
+        <p class="meta">Draft dated 26 August 2026. Operator: Gil Junqueira. Product: ScheduleGate.</p>
+
+        <h2>1. Summary</h2>
+        <p>The ScheduleGate CLI does <strong>not</strong> include telemetry. It does not phone home and does not upload your schedule files. Purchases go through Gumroad. License keys are emailed with Resend. This page is a draft and has no effect until published.</p>
+
+        <h2>2. Who we are</h2>
+        <p>ScheduleGate is operated by Gil Junqueira (“we”, “us”). Contact: <a href="mailto:support@schedulegate.dev">support@schedulegate.dev</a>. This policy covers schedulegate.dev, license-key delivery, and the CLI.</p>
+
+        <h2>3. The CLI: no telemetry</h2>
+        <p>HMAC-signed keys are checked on your machine. Community’s one-assessment-per-month counter is stored only locally (default <code>~/.schedulegate.yaml</code>). We do not receive crash reports, command history, or project schedules from the binary.</p>
+
+        <h2>4. Purchases: Gumroad is merchant of record</h2>
+        <p>If you buy Pro, <strong>Gumroad, Inc. is the merchant of record</strong>. Gumroad collects the payment method, billing details, and the email you give at checkout, and issues the receipt. We do not see your full card number. Gumroad’s own privacy policy applies to that checkout.</p>
+        <p>Gumroad then sends us a sale notification that includes your email so we can mint and deliver a license key. We use that email for fulfillment and related support, not for a marketing list.</p>
+
+        <h2>5. License email: Resend</h2>
+        <p>We send the key with <strong>Resend</strong> from <code>noreply@schedulegate.dev</code> to the Gumroad purchase email. Resend processes that transactional message. We do not use Resend for newsletters.</p>
+        <p>The email address is also encoded as the subject inside the signed license key so the key can be shown by <code>schedulegate license info</code> offline.</p>
+
+        <h2>6. License server and hosting</h2>
+        <p>The minting server does not keep a customer database. It receives the webhook, signs a key, emails it, and writes operational logs (which may include email address, time, and IP) on the host. Those logs exist to run and debug delivery.</p>
+        <p>The website is static HTML on Vercel. Vercel may log standard request data (IP, user agent, URL). We do not run a separate analytics or advertising pixel on the site.</p>
+
+        <h2>7. Cookies</h2>
+        <p>schedulegate.dev does not set first-party analytics cookies. Third-party pages we link to (GitHub, Gumroad) have their own practices.</p>
+
+        <h2>8. What we do not collect</h2>
+        <ul>
+            <li>Schedule files, task names, or assessment results from the CLI</li>
+            <li>Telemetry, feature-usage beacons, or phone-home checks</li>
+            <li>Payment card data (Gumroad holds that)</li>
+        </ul>
+
+        <h2>9. Sharing</h2>
+        <p>We share personal data only with processors needed to operate: Gumroad (checkout), Resend (key email), Vercel (website), and the host of the license server. We do not sell personal data. We may disclose information if required by law or to prevent abuse.</p>
+
+        <h2>10. Retention</h2>
+        <p>Gumroad retains sale records under its policies. Our server logs are kept only as long as needed for operations and abuse handling. A license key on your computer remains until you delete it. Support emails are kept as long as the thread is useful.</p>
+
+        <h2>11. Your requests</h2>
+        <p>Email <a href="mailto:support@schedulegate.dev">support@schedulegate.dev</a> to ask what we have, to correct an email used for delivery, or to request deletion of support correspondence and logs we control. We cannot erase Gumroad’s merchant records or a key already stored on your machines. Payment and tax questions belong with Gumroad first.</p>
+        <p>Depending on where you live, you may have additional rights under applicable law. We will not discriminate against you for exercising them.</p>
+
+        <h2>12. Changes</h2>
+        <p>We may update this policy. The published version on this URL applies from its stated date.</p>
+
+        <div class="related">
+            <a href="/terms">Terms of Use</a>
+            <a href="/refund">Refund Policy</a>
+        </div>
+    </div>
+</main>
+<footer>
+    <div class="container">
+        <div class="footer-copy">ScheduleGate &copy; 2026. Draft legal page — not published policy.</div>
+    </div>
+</footer>
+</body>
+</html>

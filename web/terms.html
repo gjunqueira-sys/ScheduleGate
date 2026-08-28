@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Use — ScheduleGate</title>
+    <meta name="description" content="Draft terms of use for ScheduleGate. Not in force until published.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a0a0a;
+            --bg-raised: #111111;
+            --bg-card: #161616;
+            --border: #222222;
+            --border-bright: #333333;
+            --text: #e8e8e8;
+            --text-muted: #888888;
+            --text-dim: #555555;
+            --accent: #00d4aa;
+            --accent-dim: #00d4aa22;
+            --accent-hover: #00f5c4;
+            --yellow: #ffd93d;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        body { font-family: var(--font-sans); background: var(--bg); color: var(--text); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { color: var(--accent-hover); }
+        .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+        nav { position: sticky; top: 0; z-index: 10; background: #0a0a0aee; backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 16px 0; }
+        nav .container { display: flex; align-items: center; justify-content: space-between; }
+        .nav-logo { font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem; color: var(--text); }
+        .nav-logo span { color: var(--accent); }
+        .nav-back { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+        .nav-back:hover { color: var(--text); }
+        main { padding: 48px 0 80px; }
+        .draft {
+            font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.4px;
+            color: var(--yellow); background: #ffd93d14; border: 1px solid #ffd93d44;
+            padding: 10px 14px; border-radius: 8px; margin-bottom: 28px;
+        }
+        h1 { font-size: 2rem; letter-spacing: -0.8px; margin-bottom: 8px; }
+        .meta { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 36px; }
+        h2 { font-size: 1.15rem; margin: 36px 0 12px; letter-spacing: -0.3px; }
+        p, li { color: var(--text-muted); font-size: 0.95rem; }
+        p + p { margin-top: 12px; }
+        ul { margin: 12px 0 0 20px; }
+        li { margin: 6px 0; }
+        strong { color: var(--text); font-weight: 600; }
+        code { font-family: var(--font-mono); font-size: 0.82em; color: var(--text); background: var(--bg-raised); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+        .related { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.88rem; }
+        footer { border-top: 1px solid var(--border); padding: 32px 0 48px; text-align: center; }
+        .footer-copy { font-size: 0.78rem; color: var(--text-dim); }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="container">
+        <a class="nav-logo" href="/">schedule<span>gate</span></a>
+        <a class="nav-back" href="/">Back to site</a>
+    </div>
+</nav>
+<main>
+    <div class="container">
+        <div class="draft">DRAFT — not in force. Do not treat this as a live policy. Pending review before publication.</div>
+        <h1>Terms of Use</h1>
+        <p class="meta">Draft dated 26 August 2026. Operator: Gil Junqueira. Product: ScheduleGate.</p>
+
+        <h2>1. These terms</h2>
+        <p>These Terms of Use (“Terms”) govern access to <a href="https://schedulegate.dev">schedulegate.dev</a> and commercial purchases of ScheduleGate Pro. They are a draft and have no effect until published.</p>
+        <p>Software rights are governed by the applicable software license, not by this page:</p>
+        <ul>
+            <li><strong>Community</strong> use is under the <a href="https://github.com/gjunqueira-sys/ScheduleGate/blob/main/LICENSE">GNU Affero General Public License v3 (AGPLv3)</a>.</li>
+            <li><strong>Pro</strong> use after a valid purchase is under the <a href="https://github.com/gjunqueira-sys/ScheduleGate/blob/main/LICENSE-COMMERCIAL">ScheduleGate Commercial License</a>.</li>
+        </ul>
+        <p>If these Terms conflict with the applicable software license on software rights, that license controls. If they conflict with Gumroad’s checkout terms on payment, tax, or receipts, Gumroad’s terms control for that purchase.</p>
+
+        <h2>2. Who we are</h2>
+        <p>ScheduleGate is operated by Gil Junqueira (“we”, “us”). Contact: <a href="mailto:support@schedulegate.dev">support@schedulegate.dev</a>.</p>
+        <p>The product currently offered is the ScheduleGate command-line interface (CLI) for macOS, Windows, and Linux. A desktop GUI is not part of the current commercial offering.</p>
+
+        <h2>3. Two licenses: Community (AGPLv3) vs Pro (commercial)</h2>
+        <p><strong>Community.</strong> You may use the public source and Community-tier binary under AGPLv3 at no charge. Community is limited to one assessment per calendar month with terminal output only. <code>validate</code> remains available. HTML, CSV, Excel, JSON, <code>compare</code>, and <code>check-patterns</code> are not included. If you modify the software and provide it as a network service, AGPLv3 §13 requires you to offer Corresponding Source. The public repository is the Corresponding Source for the unmodified project.</p>
+        <p><strong>Pro.</strong> Buying ScheduleGate Pro ($99 per year, currently the only paid product) grants a Commercial License for one user. That license replaces AGPLv3 copyleft and source-disclosure obligations for you as licensee. Pro unlocks unlimited assessments and the gated commands and export formats listed on the site and in the user manual. The key is valid for one year plus a seven-day grace period, then the software falls back to Community (AGPLv3) until you renew.</p>
+        <p>Team, Lifetime, and Enterprise tiers may be described on the site as coming soon. They are not offered for sale unless a checkout page says otherwise.</p>
+        <p>You may not redistribute, resell, sublicense, or lease the commercial software; reverse-engineer the license validation mechanism; or use the software to build a competing commercial product. Seat limits in the purchased tier are binding. The Commercial License is non-transferable unless a purchased tier expressly allows transfer.</p>
+
+        <h2>4. Purchases and Gumroad as merchant of record</h2>
+        <p>Paid licenses are sold through <a href="https://junqueira5.gumroad.com/l/schedulegate">Gumroad</a>. <strong>Gumroad, Inc. is the merchant of record</strong> for those sales. Gumroad processes payment, issues the receipt, and handles applicable sales tax or VAT. We do not receive or store your card number.</p>
+        <p>After a successful sale, Gumroad notifies our license server. We mint an HMAC-signed key and email it to the purchase address via Resend (from <code>noreply@schedulegate.dev</code>). Activate with <code>schedulegate license set SG-…</code>.</p>
+        <p>Refunds are described in the <a href="/refund">Refund Policy</a>.</p>
+
+        <h2>5. License keys and no telemetry</h2>
+        <p>Keys are validated locally. The CLI does not phone home, does not send schedule files or usage data to us, and works air-gapped. Community monthly usage is stored only on your machine (default <code>~/.schedulegate.yaml</code>).</p>
+        <p>Because validation is offline, we cannot remotely disable a key after issue. A refund or termination ends the commercial permission to use Pro features. Continued Pro use after that is not authorized. Run <code>schedulegate license clear</code> after a refund.</p>
+
+        <h2>6. Website</h2>
+        <p>The site is provided as-is for information, documentation, and links to download or buy. Do not attempt to disrupt it or probe systems beyond the public pages. See the <a href="/privacy">Privacy Policy</a> for what hosting and purchase flows may log.</p>
+
+        <h2>7. Disclaimer and liability</h2>
+        <p>THE SOFTWARE AND SITE ARE PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. ScheduleGate reports are decision-support tools; you remain responsible for schedule quality and any contractual or regulatory use of the output.</p>
+        <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, WE ARE NOT LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR LOST PROFITS, DATA, OR BUSINESS, ARISING FROM THE SOFTWARE OR SITE. OUR TOTAL LIABILITY FOR A PAID PURCHASE IS LIMITED TO THE AMOUNT YOU PAID FOR THAT LICENSE TERM.</p>
+
+        <h2>8. Changes, law, contact</h2>
+        <p>We may update these Terms. The published version on this URL applies from its stated date. Material changes to a paid term will not apply retroactively to an already-started Pro term except as required by law or the Commercial License.</p>
+        <p>These Terms are governed by the laws of the United States of America, matching the Commercial License.</p>
+        <p>Questions: <a href="mailto:support@schedulegate.dev">support@schedulegate.dev</a>.</p>
+
+        <div class="related">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/refund">Refund Policy</a>
+            <a href="https://github.com/gjunqueira-sys/ScheduleGate/blob/main/LICENSE">AGPLv3</a>
+            <a href="https://github.com/gjunqueira-sys/ScheduleGate/blob/main/LICENSE-COMMERCIAL">Commercial License</a>
+        </div>
+    </div>
+</main>
+<footer>
+    <div class="container">
+        <div class="footer-copy">ScheduleGate &copy; 2026. Draft legal page — not published policy.</div>
+    </div>
+</footer>
+</body>
+</html>

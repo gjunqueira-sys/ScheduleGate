@@ -83,3 +83,41 @@ func TestVercelPricingRedirect(t *testing.T) {
 		t.Fatal("vercel.json must redirect /pricing → /#pricing")
 	}
 }
+
+func TestLegalDraftsCoverRequiredTopics(t *testing.T) {
+	root := filepath.Join("..", "..")
+	files := []string{"terms.html", "privacy.html", "refund.html"}
+	combined := ""
+	for _, name := range files {
+		raw, err := os.ReadFile(filepath.Join(root, "web", name))
+		if err != nil {
+			t.Fatalf("draft %s: %v", name, err)
+		}
+		page := string(raw)
+		combined += page
+		for _, want := range []string{
+			"DRAFT — not in force",
+			`name="robots" content="noindex, nofollow"`,
+			"support@schedulegate.dev",
+		} {
+			if !strings.Contains(page, want) {
+				t.Errorf("%s missing %q", name, want)
+			}
+		}
+	}
+
+	for _, want := range []string{
+		"AGPLv3",
+		"Community",
+		"Commercial License",
+		"merchant of record",
+		"Resend",
+		"no telemetry",
+		"14 days",
+		"future purchases",
+	} {
+		if !strings.Contains(combined, want) {
+			t.Errorf("legal drafts missing required topic %q", want)
+		}
+	}
+}

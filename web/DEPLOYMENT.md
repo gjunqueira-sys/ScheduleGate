@@ -62,6 +62,9 @@ vercel deploy --prod
 ```
 web/
 ├── index.html          # Main landing page (single-page site)
+├── terms.html          # Draft Terms — not linked, noindex, not live policy
+├── privacy.html        # Draft Privacy — not linked, noindex, not live policy
+├── refund.html         # Draft Refund — not linked, noindex, not live policy
 ├── docs.html           # Copied from docs/user-manual.html at deploy time
 ├── vercel.json         # Vercel configuration (headers, routing)
 ├── .vercel/            # Vercel project metadata (tracked in git)
@@ -70,7 +73,9 @@ web/
 └── DEPLOYMENT.md       # This file
 ```
 
-`docs.html` is generated in CI (`cp docs/user-manual.html web/docs.html`) and is not committed (`*.html` is gitignored except `web/index.html`). `cleanUrls` serves it at `/docs`.
+`docs.html` is generated in CI (`cp docs/user-manual.html web/docs.html`) and is not committed (`*.html` is gitignored except `web/index.html`, `web/terms.html`, `web/privacy.html`, and `web/refund.html`). `cleanUrls` serves it at `/docs`.
+
+Legal drafts exist on disk so they can be reviewed. Do not add footer links and do not treat them as published policy until Phase 6. They ship `noindex` and a DRAFT banner until then.
 
 `/pricing` redirects to `/#pricing` so CLI upgrade links do not 404.
 

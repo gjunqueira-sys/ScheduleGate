@@ -19,6 +19,9 @@ bin/
 !docs/*.html
 !desktop/frontend/index.html
 !web/index.html
+!web/terms.html
+!web/privacy.html
+!web/refund.html
 
 # IDEs
 .vscode/
