@@ -4,7 +4,7 @@ BIN_DIR=bin
 VERSIONS_DIR=bin/versions
 
 # Version metadata (override VERSION= on the command line)
-VERSION ?= 1.0.5
+VERSION ?= 1.0.6
 COMMIT  := $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
 BUILD_DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 VERSION_PKG := github.com/gjunqueira-sys/ScheduleGate/internal/version

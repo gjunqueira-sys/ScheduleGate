@@ -8,7 +8,7 @@ info:
   description: "DCMA 14-Point Schedule Assessment Tool"
   copyright: "(c) 2026 ScheduleGate"
   comments: "DCMA 14-Point Schedule Assessment Desktop Application"
-  version: "1.0.5"
+  version: "1.0.6"
 
 dev_mode:
   root_path: .

@@ -659,7 +659,7 @@
             <div class="install-step">
                 <div class="step-num">01</div>
                 <h3>Download</h3>
-                <div class="code-block"><span class="dollar">$</span> curl -sSL https://github.com/gjunqueira-sys/ScheduleGate/releases/latest/download/schedulegate-v1.0.5.zip -o schedulegate.zip</div>
+                <div class="code-block"><span class="dollar">$</span> curl -sSL https://github.com/gjunqueira-sys/ScheduleGate/releases/latest/download/schedulegate-v1.0.6.zip -o schedulegate.zip</div>
                 <div class="code-block" style="margin-top:8px"><span class="dollar">$</span> unzip schedulegate.zip</div>
                 <p class="install-note">Binaries: <code>schedulegate</code> (macOS) · <code>schedulegate.exe</code> (Windows) · <code>schedulegate-linux</code> (Linux)</p>
             </div>
@@ -693,7 +693,7 @@
     <span class="key">steps:</span>
       - <span class="key">uses:</span> <span class="str">actions/checkout@v4</span>
       - <span class="key">run:</span> <span class="str">|</span>
-          curl -sSL https://github.com/gjunqueira-sys/ScheduleGate/releases/latest/download/schedulegate-v1.0.5.zip -o sg.zip
+          curl -sSL https://github.com/gjunqueira-sys/ScheduleGate/releases/latest/download/schedulegate-v1.0.6.zip -o sg.zip
           unzip -j sg.zip schedulegate-linux
           chmod +x schedulegate-linux
       - <span class="key">run:</span> <span class="str">./schedulegate-linux assess ims.xlsx --json --json-output results.json</span>
