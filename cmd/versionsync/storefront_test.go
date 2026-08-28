@@ -29,6 +29,10 @@ func TestWebsiteProOnlyStorefront(t *testing.T) {
 		`<a href="/docs">Docs</a>`,
 		`>Buy Pro</a>`,
 		`github.com/gjunqueira-sys/ScheduleGate/issues`,
+		`<a href="/terms">Terms</a>`,
+		`<a href="/privacy">Privacy</a>`,
+		`<a href="/refund">Refund</a>`,
+		`mailto:support@schedulegate.dev`,
 	} {
 		if !strings.Contains(page, want) {
 			t.Errorf("index.html missing %q", want)
@@ -42,9 +46,6 @@ func TestWebsiteProOnlyStorefront(t *testing.T) {
 		"USER_MANUAL.md",
 		"unzip schedulegate &&",
 		"https://github.com/.../schedulegate-linux",
-		"/terms",
-		"/privacy",
-		"/refund",
 	} {
 		if strings.Contains(page, forbid) {
 			t.Errorf("index.html must not contain %q", forbid)
@@ -84,24 +85,29 @@ func TestVercelPricingRedirect(t *testing.T) {
 	}
 }
 
-func TestLegalDraftsCoverRequiredTopics(t *testing.T) {
+func TestLegalPagesPublished(t *testing.T) {
 	root := filepath.Join("..", "..")
 	files := []string{"terms.html", "privacy.html", "refund.html"}
 	combined := ""
 	for _, name := range files {
 		raw, err := os.ReadFile(filepath.Join(root, "web", name))
 		if err != nil {
-			t.Fatalf("draft %s: %v", name, err)
+			t.Fatalf("%s: %v", name, err)
 		}
 		page := string(raw)
 		combined += page
-		for _, want := range []string{
+		if !strings.Contains(page, "support@schedulegate.dev") {
+			t.Errorf("%s missing support@schedulegate.dev", name)
+		}
+		for _, forbid := range []string{
 			"DRAFT — not in force",
 			`name="robots" content="noindex, nofollow"`,
-			"support@schedulegate.dev",
+			"Draft dated",
+			"not published policy",
+			"has no effect until published",
 		} {
-			if !strings.Contains(page, want) {
-				t.Errorf("%s missing %q", name, want)
+			if strings.Contains(page, forbid) {
+				t.Errorf("%s still contains draft marker %q", name, forbid)
 			}
 		}
 	}
@@ -115,9 +121,38 @@ func TestLegalDraftsCoverRequiredTopics(t *testing.T) {
 		"no telemetry",
 		"14 days",
 		"future purchases",
+		"Effective 27 August 2026",
 	} {
 		if !strings.Contains(combined, want) {
-			t.Errorf("legal drafts missing required topic %q", want)
+			t.Errorf("legal pages missing required topic %q", want)
+		}
+	}
+}
+
+func TestGumroadDescriptionHasLegalURLs(t *testing.T) {
+	root := filepath.Join("..", "..")
+	raw, err := os.ReadFile(filepath.Join(root, "scripts", "release", "gumroad", "description-template.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	page := string(raw)
+	for _, want := range []string{
+		"https://schedulegate.dev/terms",
+		"https://schedulegate.dev/privacy",
+		"https://schedulegate.dev/refund",
+		"support@schedulegate.dev",
+		"schedulegate-linux",
+	} {
+		if !strings.Contains(page, want) {
+			t.Errorf("gumroad description-template.md missing %q", want)
+		}
+	}
+	for _, forbid := range []string{
+		"schedulegate-gui",
+		"MIT License",
+	} {
+		if strings.Contains(page, forbid) {
+			t.Errorf("gumroad description-template.md must not contain %q", forbid)
 		}
 	}
 }

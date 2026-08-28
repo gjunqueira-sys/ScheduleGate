@@ -232,6 +232,28 @@ func TestGumroadWebhook_NoTokenAtAll(t *testing.T) {
 	}
 }
 
+func TestLicenseKeyEmailBody(t *testing.T) {
+	body := licenseKeyEmailBody(MintResponse{
+		LicenseKey: "SG-TESTKEY",
+		Tier:       "pro",
+		Expiry:     "2027-08-27",
+	})
+	for _, want := range []string{
+		"SG-TESTKEY",
+		"pro",
+		"2027-08-27",
+		"schedulegate license set SG-TESTKEY",
+		"support@schedulegate.dev",
+		"https://schedulegate.dev/terms",
+		"https://schedulegate.dev/privacy",
+		"https://schedulegate.dev/refund",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("license email missing %q", want)
+		}
+	}
+}
+
 func TestGumroadWebhook_MissingEmail(t *testing.T) {
 	_, ts := newServer(t)
 	resp := doRequest(t, ts, "POST", "/api/v1/webhooks/gumroad", "webhook-token", "", "application/x-www-form-urlencoded")

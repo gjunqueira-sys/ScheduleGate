@@ -169,8 +169,7 @@ func (o *ServerOptions) maybeEmailKey(to string, resp MintResponse) {
 		return
 	}
 	subject := "Your ScheduleGate Pro license key"
-	body := fmt.Sprintf("Thanks for buying ScheduleGate Pro.\n\nLicense key: %s\nTier: %s\nExpires: %s\n\nInstall with: schedulegate license set %s\n",
-		resp.LicenseKey, resp.Tier, resp.Expiry, resp.LicenseKey)
+	body := licenseKeyEmailBody(resp)
 
 	payload := map[string]any{
 		"from":    from,
@@ -207,6 +206,13 @@ func (o *ServerOptions) maybeEmailKey(to string, resp MintResponse) {
 		errBody.ReadFrom(res.Body)
 		log.Printf("license server: failed to email key to %s: Resend returned %d: %s", to, res.StatusCode, errBody.String())
 	}
+}
+
+const supportEmail = "support@schedulegate.dev"
+
+func licenseKeyEmailBody(resp MintResponse) string {
+	return fmt.Sprintf("Thanks for buying ScheduleGate Pro.\n\nLicense key: %s\nTier: %s\nExpires: %s\n\nActivate with:\n  schedulegate license set %s\n\nIf this key is missing or you need help, email %s\n\nTerms:   https://schedulegate.dev/terms\nPrivacy: https://schedulegate.dev/privacy\nRefunds: https://schedulegate.dev/refund\n",
+		resp.LicenseKey, resp.Tier, resp.Expiry, resp.LicenseKey, supportEmail)
 }
 
 func bearerToken(r *http.Request) string {

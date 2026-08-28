@@ -62,9 +62,9 @@ vercel deploy --prod
 ```
 web/
 ├── index.html          # Main landing page (single-page site)
-├── terms.html          # Draft Terms — not linked, noindex, not live policy
-├── privacy.html        # Draft Privacy — not linked, noindex, not live policy
-├── refund.html         # Draft Refund — not linked, noindex, not live policy
+├── terms.html          # Terms of Use (footer-linked)
+├── privacy.html        # Privacy Policy (footer-linked)
+├── refund.html         # Refund Policy (footer-linked)
 ├── docs.html           # Copied from docs/user-manual.html at deploy time
 ├── vercel.json         # Vercel configuration (headers, routing)
 ├── .vercel/            # Vercel project metadata (tracked in git)
@@ -75,7 +75,7 @@ web/
 
 `docs.html` is generated in CI (`cp docs/user-manual.html web/docs.html`) and is not committed (`*.html` is gitignored except `web/index.html`, `web/terms.html`, `web/privacy.html`, and `web/refund.html`). `cleanUrls` serves it at `/docs`.
 
-Legal drafts exist on disk so they can be reviewed. Do not add footer links and do not treat them as published policy until Phase 6. They ship `noindex` and a DRAFT banner until then.
+Legal pages are published (effective 27 August 2026) and linked from the site footer. `cleanUrls` serves them at `/terms`, `/privacy`, and `/refund`.
 
 `/pricing` redirects to `/#pricing` so CLI upgrade links do not 404.
 
@@ -86,11 +86,12 @@ The website footer should reflect the dual-license model:
 - **Pro** (for sale): Commercial License via Gumroad
 - **Team / Lifetime**: shown as Coming soon — no checkout
 
-Footer links: GitHub, Docs (`/docs`), Buy Pro, Issues. Do not add Terms / Privacy / Refund until Phase 6.
+Footer links: GitHub, Docs (`/docs`), Buy Pro, Issues, Terms, Privacy, Refund. Support address: `support@schedulegate.dev`.
 
 Current footer text:
 ```
 ScheduleGate © 2026. Dual-licensed under AGPLv3 + Commercial License.
+Support: support@schedulegate.dev
 ```
 
 ## Updating Website Content

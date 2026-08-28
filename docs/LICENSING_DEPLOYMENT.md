@@ -95,13 +95,15 @@ Then verify with `curl https://<your-domain>/health` → `{"status":"ok"}`.
 
 ## Day-4 acceptance checklist (real test transaction)
 
-- [ ] One secret value used for both the CLI release build and `SG_SECRET`
-- [ ] `license-server` deployed, `/health` returns `{"status":"ok"}`
-- [ ] Store webhook URL configured (`.../api/v1/webhooks/gumroad?token=<SG_WEBHOOK_TOKEN>`)
-- [ ] Bought product with a throwaway card; webhook fired; key minted
-- [ ] `schedulegate license set <key>` → PASS, PRO tier
-- [ ] `schedulegate assess file.xlsx --json` works (Pro gate lifted)
-- [ ] Same key rejected by a differently-signed build (sanity: `signature mismatch`)
+Confirmed 27 August 2026.
+
+- [x] One secret value used for both the CLI release build and `SG_SECRET`
+- [x] `license-server` deployed, `/health` returns `{"status":"ok"}`
+- [x] Store webhook URL configured (`.../api/v1/webhooks/gumroad?token=<SG_WEBHOOK_TOKEN>`)
+- [x] Bought product with a throwaway card; webhook fired; key minted
+- [x] `schedulegate license set <key>` → PASS, PRO tier
+- [x] `schedulegate assess file.xlsx --json` works (Pro gate lifted)
+- [x] Same key rejected by a differently-signed build (sanity: `signature mismatch`)
 
 ## Security notes
 
