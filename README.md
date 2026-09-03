@@ -280,6 +280,10 @@ For a deep dive into how scores are calculated, see the [Comparison Manual](docs
 -   **Task Churn**: Ratio of added/deleted tasks to total tasks.
 -   **Ghost Tasks**: Tasks that are "sliding" (Start date in past, 0% complete).
 
+## Further reading
+
+For a plain-language walkthrough of the DCMA 14-Point assessment and why most schedules fail it, read [*Most Project Schedules Would Fail a Defense Audit*](https://medium.com/@giljunqueira/most-project-schedules-would-fail-a-defense-audit-455744c4294f).
+
 ---
 
 **Public release:** v1.0.6 — August 2026
