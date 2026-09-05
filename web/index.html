@@ -4,7 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScheduleGate — DCMA 14-Point Schedule Assessment CLI</title>
-    <meta name="description" content="Open-source CLI tool for DCMA 14-Point Schedule Assessments. Drop it into your CI/CD pipeline.">
+    <meta name="description" content="DCMA 14-Point schedule assessment for MS Project exports. 14-metric pass/fail health check with published PAM thresholds — offline, no cloud upload. Free tier, or $99/yr.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "ScheduleGate",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "macOS, Linux, Windows",
+          "url": "https://schedulegate.dev",
+          "description": "CLI tool that runs a DCMA 14-Point Schedule Assessment on MS Project Excel/CSV exports. 14-metric pass/fail health check, offline, no telemetry.",
+          "offers": { "@type": "Offer", "price": "99", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "Organization",
+          "name": "ScheduleGate",
+          "url": "https://schedulegate.dev",
+          "email": "support@schedulegate.dev",
+          "sameAs": [
+            "https://github.com/gjunqueira-sys/ScheduleGate",
+            "https://www.linkedin.com/company/schedulegate/"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Does ScheduleGate work with Primavera P6?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Not natively. Export activities to Excel/CSV; validate checks the columns. XER is a future feature, not a promise." }
+            },
+            {
+              "@type": "Question",
+              "name": "Does ScheduleGate upload my schedule anywhere?",
+              "acceptedAnswer": { "@type": "Answer", "text": "No. The CLI never phones home, works air-gapped, and has no telemetry." }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the difference between Community and Pro?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Community is one assessment per month with terminal output only. Pro is $99/year for unlimited assessments, compare, pattern rules, and HTML, CSV, JSON and Excel exceptions output." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -459,6 +505,7 @@
             .pricing-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
@@ -477,6 +524,7 @@
             <a href="#metrics">Metrics</a>
             <a href="#pricing">Pricing</a>
             <a href="#install">Install</a>
+            <a href="/audit">Free Audit</a>
             <a href="https://github.com/gjunqueira-sys/ScheduleGate" class="nav-cta">GitHub</a>
         </div>
     </div>
@@ -741,6 +789,7 @@
         <div class="footer-links">
             <a href="https://github.com/gjunqueira-sys/ScheduleGate">GitHub</a>
             <a href="/docs">Docs</a>
+            <a href="/audit">Free Audit</a>
             <a href="https://junqueira5.gumroad.com/l/schedulegate">Buy Pro</a>
             <a href="https://github.com/gjunqueira-sys/ScheduleGate/issues">Issues</a>
             <a href="/terms">Terms</a>

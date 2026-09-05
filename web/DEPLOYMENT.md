@@ -62,10 +62,14 @@ vercel deploy --prod
 ```
 web/
 ├── index.html          # Main landing page (single-page site)
+├── audit.html          # Free-audit intake page at /audit (the v2 top of funnel)
+├── api/audit.js        # Vercel serverless function: forwards audit form → Resend email
 ├── terms.html          # Terms of Use (footer-linked)
 ├── privacy.html        # Privacy Policy (footer-linked)
 ├── refund.html         # Refund Policy (footer-linked)
 ├── docs.html           # Copied from docs/user-manual.html at deploy time
+├── robots.txt          # Crawler allow + sitemap pointer
+├── sitemap.xml         # URL index (/, /audit, /docs, /terms, /privacy, /refund)
 ├── vercel.json         # Vercel configuration (headers, routing)
 ├── .vercel/            # Vercel project metadata (tracked in git)
 │   ├── project.json    # Project ID and org ID
@@ -73,7 +77,18 @@ web/
 └── DEPLOYMENT.md       # This file
 ```
 
-`docs.html` is generated in CI (`cp docs/user-manual.html web/docs.html`) and is not committed (`*.html` is gitignored except `web/index.html`, `web/terms.html`, `web/privacy.html`, and `web/refund.html`). `cleanUrls` serves it at `/docs`.
+`docs.html` is generated in CI (`cp docs/user-manual.html web/docs.html`) and is not committed (`*.html` is gitignored except the allowlisted pages). `cleanUrls` serves it at `/docs`.
+
+## Free-audit form (`/audit`)
+
+`audit.html` is the landing page for the v2 free-DCMA-audit offer. Its form POSTs JSON to the serverless function `api/audit.js`, which forwards the request to `support@schedulegate.dev` via the Resend HTTP API.
+
+**Required Vercel environment variable:** `RESEND_AUDIT_KEY` (a Resend API key valid for the `schedulegate.dev` domain — same domain used by the license server).
+
+- Without the env var the endpoint returns `notConfigured` and the page falls back to a pre-filled `mailto:` draft, so `/audit` works even before configuration.
+- The function is auto-detected by Vercel (zero-config Node function in the `api/` directory) and deployed by the existing `vercel build` / `vercel deploy --prod` steps.
+- The form has a hidden honeypot field and server-side validation of `name`/`email`. No file upload is accepted client-side — the prospect emails the sanitised export (per the audit playbook), which is intentional: the exchange *is* the conversation.
+- The page links the audit offer from the site nav and footer and is listed in `sitemap.xml` and `robots.txt`.
 
 Legal pages are published (effective 27 August 2026) and linked from the site footer. `cleanUrls` serves them at `/terms`, `/privacy`, and `/refund`.
 

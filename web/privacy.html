@@ -49,6 +49,7 @@
         footer { border-top: 1px solid var(--border); padding: 32px 0 48px; text-align: center; }
         .footer-copy { font-size: 0.78rem; color: var(--text-dim); }
     </style>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <nav>
@@ -81,10 +82,10 @@
 
         <h2>6. License server and hosting</h2>
         <p>The minting server does not keep a customer database. It receives the webhook, signs a key, emails it, and writes operational logs (which may include email address, time, and IP) on the host. Those logs exist to run and debug delivery.</p>
-        <p>The website is static HTML on Vercel. Vercel may log standard request data (IP, user agent, URL). We do not run a separate analytics or advertising pixel on the site.</p>
+        <p>The website is static HTML on Vercel. Vercel may log standard request data (IP, user agent, URL). We use <strong>Vercel Web Analytics</strong> for aggregate page-view counts — it is cookieless, uses no cross-site tracking, and stores no personal identifiers. The CLI itself never phones home.</p>
 
         <h2>7. Cookies</h2>
-        <p>schedulegate.dev does not set first-party analytics cookies. Third-party pages we link to (GitHub, Gumroad) have their own practices.</p>
+        <p>schedulegate.dev does not set first-party analytics cookies. Web Analytics is cookieless (aggregate counts by URL only). Third-party pages we link to (GitHub, Gumroad) have their own practices.</p>
 
         <h2>8. What we do not collect</h2>
         <ul>

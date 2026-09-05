@@ -22,6 +22,7 @@ bin/
 !web/terms.html
 !web/privacy.html
 !web/refund.html
+!web/audit.html
 
 # IDEs
 .vscode/
@@ -51,6 +52,10 @@ storageState.json
 *storage-state.json
 *storage-state*.json
 playwright/.auth/
+
+# Marketing artifacts in repo root — screenshots and browser action snaps (never commit)
+/*.png
+/s2-*.yml
 
 # Tool artifacts
 .playwright-mcp/
